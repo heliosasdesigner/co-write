@@ -2,13 +2,16 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+
+// get the API key from local environment
+const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAvB-m-kCaII3LcKXRJeeQqBzOq826fze4",
+  apiKey: FIREBASE_API_KEY,
   authDomain: "indecisive-reactnative.firebaseapp.com",
   projectId: "indecisive-reactnative",
   storageBucket: "indecisive-reactnative.firebasestorage.app",
