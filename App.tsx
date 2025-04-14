@@ -1,22 +1,29 @@
+import React from "react";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import LandingPage from "./src/screens/LandingPage";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hello! this is co-write</Text>
-      <Text style={styles.subtitle}>This is a subtitle</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Hello! this is co-write</Text>
+        <Text style={styles.subtitle}>This is a subtitle</Text>
+      </View>
+      <LandingPage />
       <StatusBar style="auto" />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+  },
+  header: {
+    padding: 16,
+    backgroundColor: "#f2f2f2",
     alignItems: "center",
-    justifyContent: "center",
   },
   title: {
     fontSize: 20,
