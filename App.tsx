@@ -3,6 +3,7 @@ import React from "react";
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import LandingPage from "./src/screens/LandingPage";
+import ProfilePage from "./src/screens/ProfilePage";
 
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
         <Text style={styles.subtitle}>This is a subtitle</Text>
       </View>
       <LandingPage />
+      {/*<ProfilePage />*/}
       <StatusBar style="auto" />
     </SafeAreaView>
 

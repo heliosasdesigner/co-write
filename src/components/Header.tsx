@@ -8,7 +8,6 @@ const Header = () => (
     </View>
   </View>
 );
-
 const styles = StyleSheet.create({
   wrapper: {
     backgroundColor: "#e6f0fa",
@@ -28,5 +27,4 @@ const styles = StyleSheet.create({
     color: "#1f2b38",
   },
 });
-
 export default Header;
