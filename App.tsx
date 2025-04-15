@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
-import Video from "react-native-video";
-import { StyleSheet, Text, View } from "react-native";
-import { getStories, Story } from "./api/stories";
-import CreateStoryButton from "./components/CreateStoryTesting";
+
+import React from "react";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import LandingPage from "./src/screens/LandingPage";
+
+
 export default function App() {
   const sampleVideo = require("./assets/sampleVideo.mp4");
 
@@ -20,37 +22,27 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      {stories.map((story) => (
-        <React.Fragment key={story.id}>
-          <Text style={styles.title}>{story.title}</Text>
-          <Text style={styles.subtitle}>Topic: {story.topic}</Text>
-          <Text>Posted by: {story.username}</Text>
 
-          <Video
-            source={sampleVideo}
-            style={styles.video}
-            controls={false}
-            paused={false}
-            repeat={true}
-            resizeMode="contain"
-            onError={(error) => console.error("Video error:", error)}
-          />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Hello! this is co-write</Text>
+        <Text style={styles.subtitle}>This is a subtitle</Text>
+      </View>
+      <LandingPage />
+      <StatusBar style="auto" />
+    </SafeAreaView>
 
-          <Text>Votes: {story.votes}</Text>
-        </React.Fragment>
-      ))}
-      <CreateStoryButton />
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+  },
+  header: {
+    padding: 16,
+    backgroundColor: "#f2f2f2",
     alignItems: "center",
-    justifyContent: "center",
   },
   title: {
     fontSize: 20,
