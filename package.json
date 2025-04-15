@@ -12,13 +12,16 @@
     "expo": "~52.0.43",
     "expo-status-bar": "~2.0.1",
     "firebase": "^11.6.0",
+    "openai": "^4.94.0",
     "react": "18.3.1",
     "react-native": "0.76.9",
+    "react-native-openai": "^0.6.2",
     "react-native-video": "^6.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~18.3.12",
+    "react-native-dotenv": "^3.4.11",
     "typescript": "^5.3.3"
   },
   "private": true
