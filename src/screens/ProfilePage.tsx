@@ -33,7 +33,7 @@ const ProfilePage = () => {
         <Picker
           selectedValue={filter}
           style={styles.picker}
-          onValueChange={(itemValue) => setFilter(itemValue)}
+          onValueChange={(itemValue: string) => setFilter(itemValue)}
         >
           <Picker.Item label="Date Made" value="date" />
           <Picker.Item label="A - Z" value="az" />
