@@ -1,11 +1,16 @@
-import React from "react";
+
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import React, { useState, useEffect } from "react";
+
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import LandingPage from "./src/screens/LandingPage";
+
 import Search from "./src/screens/SearchPage";
 import NewStory from "./src/screens/NewStoryPage";
 import StoryRooms from "./src/screens/StoryRoomsPage";
@@ -27,6 +32,9 @@ export default function App() {
         <StatusBar style="auto" />
       </NavigationContainer>
     </SafeAreaProvider>
+
+import LLMPoc from "./src/components/LLMPoc";
+
   );
 }
 
