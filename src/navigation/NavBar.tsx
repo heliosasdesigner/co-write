@@ -1,34 +1,36 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const tabs = ["Home", "Search", "New Story", "Story Rooms", "Profile"];
 
-const NavBar = ({ currentTab = "Home" }) => (
-  <View style={styles.container}>
-    {tabs.map((tab) => {
-      const isFocused = tab === currentTab;
-      const isMiddle = tab === "New Story";
+const NavBar = ({ currentTab = "Home" }) => {
+  const navigation = useNavigation();
 
-      return (
-        <View key={tab} style={styles.tab}>
-          <View
-            style={[
-              styles.circle,
-              isFocused && styles.activeCircle,
-              isMiddle && styles.middleCircle,
-            ]}
-          />
-          <Text style={styles.label}>{tab}</Text>
-        </View>
-      );
-    })}
-  </View>
-);
+  return (
+    <View style={styles.container}>
+      {tabs.map((tab) => {
+        const isFocused = tab === currentTab;
+
+        return (
+          <TouchableOpacity
+            key={tab}
+            style={styles.tab}
+            onPress={() => navigation.navigate(tab)}
+          >
+            <View style={[styles.circle, isFocused && styles.activeCircle]} />
+            <Text style={styles.label}>{tab}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
     paddingHorizontal: 24,
     paddingVertical: 12,
     backgroundColor: "#4a5a75",
@@ -37,16 +39,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   circle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#d6dce5",
-    marginBottom: 4,
-  },
-  middleCircle: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "#d6dce5",
     marginBottom: 4,
   },
