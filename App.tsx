@@ -1,5 +1,3 @@
-
-
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -22,14 +20,12 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <SafeAreaProvider>
-       <View style={styles.header}>
-        <Text style={styles.title}>Hello! this is co-write</Text>
-        <Text style={styles.subtitle}>This is a subtitle</Text>
-      </View>
-      <LandingPage />
-      <ProfilePage />
-      <StatusBar style="auto" />
       <NavigationContainer>
+        <View style={styles.header}>
+          <Text style={styles.title}>Hello! this is co-write</Text>
+          <Text style={styles.subtitle}>This is a subtitle</Text>
+        </View>
+
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={LandingPage} />
           <Stack.Screen name="Search" component={Search} />
@@ -37,12 +33,10 @@ export default function App() {
           <Stack.Screen name="Story Rooms" component={StoryRooms} />
           <Stack.Screen name="Profile" component={Profile} />
         </Stack.Navigator>
+
         <StatusBar style="auto" />
       </NavigationContainer>
     </SafeAreaProvider>
-
-
-
   );
 }
 

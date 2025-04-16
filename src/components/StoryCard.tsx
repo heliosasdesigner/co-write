@@ -1,18 +1,33 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 
-const StoryCard = () => (
-  <View style={styles.card}>
-    <View style={styles.tagRow}>
-      <Text style={styles.tag}>Topic</Text>
-      <Text style={styles.tag}>1min ago</Text>
+type Props = {
+  topic: string;
+  createdAt: any;
+  video?: string;
+};
+
+const StoryCard = ({ topic, createdAt, video }: Props) => {
+  const createdDate = createdAt.toDate ? createdAt.toDate() : createdAt;
+  const formattedDate = createdDate.toLocaleString();
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.tagRow}>
+        <Text style={styles.tag}>{topic}</Text>
+        <Text style={styles.tag}>{formattedDate}</Text>
+      </View>
+      <Image
+        style={styles.image}
+        source={{
+          uri: video
+            ? "https://www.seekscholar.com/sites/default/files/styles/node_image/public/1_b1T9PtMK3bxboKvnSctNmg.jpeg?itok=EwzrcGcU"
+            : "https://via.placeholder.com/100",
+        }}
+      />
     </View>
-    <Image
-      style={styles.image}
-      source={{ uri: "https://via.placeholder.com/100" }}
-    />
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   card: {

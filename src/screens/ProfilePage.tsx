@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import NavBar from "../navigation/NavBar";
+import PageLayout from "../components/PageLayout";
 
 const stories = [
   { title: "Story 1", date: "2023-04-01" },
@@ -21,7 +21,7 @@ const ProfilePage = () => {
   });
 
   return (
-    <View style={styles.container}>
+    <PageLayout currentTab="Profile">
       {/* Avatar & Username */}
       <Text style={styles.avatar}>👤</Text>
       <Text style={styles.username}>Username Placeholder</Text>
@@ -51,19 +51,11 @@ const ProfilePage = () => {
           </Text>
         )}
       />
-
-      {/* NavBar */}
-      <NavBar currentTab="Profile" />
-    </View>
+    </PageLayout>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#f9f9f9",
-  },
   avatar: {
     fontSize: 50,
     textAlign: "center",
@@ -107,47 +99,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePage;
-
-// import React from "react";
-// import { Text, StyleSheet, Image, View } from "react-native";
-// import PageLayout from "../components/PageLayout";
-
-// const ProfilePage = () => {
-//   return (
-//     <PageLayout currentTab="Profile">
-//       <View style={styles.content}>
-//         <Text style={styles.name}>Your Profile</Text>
-//         <Image
-//           style={styles.avatar}
-//           source={{ uri: "https://via.placeholder.com/100" }}
-//         />
-//         <Text style={styles.info}>Username: yourname</Text>
-//         <Text style={styles.info}>Email: you@example.com</Text>
-//       </View>
-//     </PageLayout>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   content: {
-//     alignItems: "center",
-//     marginTop: 40,
-//   },
-//   name: {
-//     fontSize: 30,
-//     fontWeight: "bold",
-//     marginBottom: 16,
-//   },
-//   avatar: {
-//     width: 100,
-//     height: 100,
-//     borderRadius: 50,
-//     marginBottom: 16,
-//   },
-//   info: {
-//     fontSize: 16,
-//     marginBottom: 8,
-//   },
-// });
-
-// export default ProfilePage;

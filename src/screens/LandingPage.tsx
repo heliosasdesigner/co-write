@@ -1,16 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet } from "react-native";
+import { collection, getDocs } from "firebase/firestore";
+import { db, auth } from "../../firebase/config.ts";
 import Header from "../components/Header";
 import StoryCard from "../components/StoryCard";
 import PageLayout from "../components/PageLayout";
 
 const LandingPage = () => {
+  const [stories, setStories] = useState([]);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "stories"));
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setStories(data);
+      } catch (err) {
+        console.error("Error fetching stories:", err);
+      }
+    };
+
+    fetchStories();
+  }, []);
+
   return (
     <PageLayout currentTab="Home" scrollable>
       <Header />
       <ScrollView contentContainerStyle={styles.grid}>
-        {[...Array(12)].map((_, idx) => (
-          <StoryCard key={idx} />
+        {stories.map((story, idx) => (
+          <StoryCard
+            key={story.id}
+            topic={story.topic}
+            createdAt={story.createdAt}
+            video={story.video}
+          />
         ))}
       </ScrollView>
     </PageLayout>
