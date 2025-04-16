@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, NavigationContext } from '@react-navigation/native';
 
-const tabs = ['Home', 'Search', 'New Story', 'Story Rooms', 'Profile'];
+const tabs = ['Home', 'Search', 'Chats', 'Story Rooms', 'Profile'];
 
 const NavBar = ({ currentTab = 'Home' }) => {
   const navigationContext = useContext(NavigationContext);
