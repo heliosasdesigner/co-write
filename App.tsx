@@ -10,6 +10,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import LandingPage from "./src/screens/LandingPage";
+import ProfilePage from "./src/screens/ProfilePage";
 
 import Search from "./src/screens/SearchPage";
 import NewStory from "./src/screens/NewStoryPage";
@@ -21,6 +22,13 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <SafeAreaProvider>
+       <View style={styles.header}>
+        <Text style={styles.title}>Hello! this is co-write</Text>
+        <Text style={styles.subtitle}>This is a subtitle</Text>
+      </View>
+      <LandingPage />
+      <ProfilePage />
+      <StatusBar style="auto" />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={LandingPage} />
@@ -33,7 +41,7 @@ export default function App() {
       </NavigationContainer>
     </SafeAreaProvider>
 
-import LLMPoc from "./src/components/LLMPoc";
+
 
   );
 }

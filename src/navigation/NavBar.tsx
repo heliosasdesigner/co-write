@@ -27,6 +27,22 @@ const NavBar = ({ currentTab = "Home" }) => {
   );
 };
 
+//  return (
+//         <View key={tab} style={styles.tab}>
+//           <View
+//             style={[
+//               styles.circle,
+//               isFocused && styles.activeCircle,
+//               isMiddle && styles.middleCircle,
+//             ]}
+//           />
+//           <Text style={styles.label}>{tab}</Text>
+//         </View>
+//       );
+//     })}
+//   </View>
+// );
+
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
@@ -53,5 +69,4 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
 });
-
 export default NavBar;
