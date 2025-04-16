@@ -17,6 +17,7 @@ import { signOut } from 'firebase/auth';
 import { auth, db } from '../../firebase/config';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
+import PageLayout from '../components/PageLayout';
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -73,10 +74,12 @@ export default function Chat() {
   }, []);
 
   return (
-    <GiftedChat
-      messages={messages}
-      onSend={(messages) => onSend(messages)}
-      user={{ _id: auth?.currentUser?.email }}
-    />
+    <PageLayout currentTab={'Chats'}>
+      <GiftedChat
+        messages={messages}
+        onSend={(messages) => onSend(messages)}
+        user={{ _id: auth?.currentUser?.email }}
+      />
+    </PageLayout>
   );
 }
