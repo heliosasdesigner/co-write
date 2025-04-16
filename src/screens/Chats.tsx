@@ -1,85 +1,43 @@
-import React, {
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useCallback,
-} from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
-import {
-  collection,
-  addDoc,
-  orderBy,
-  query,
-  onSnapshot,
-} from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../../firebase/config';
-import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
-import PageLayout from '../components/PageLayout';
+import React, { useState, useEffect } from "react";
+import { GiftedChat } from "react-native-gifted-chat";
+import { useRoute, RouteProp } from "@react-navigation/native";
+import type { ChatsFlowParamList } from "../navigation/ChatsFlowStack";
 
-export default function Chat() {
+type ChatScreenRouteProp = RouteProp<ChatsFlowParamList, "ChatConversation">;
+
+export default function Chats() {
+  const route = useRoute<ChatScreenRouteProp>();
+  const {
+    topic = "Untitled",
+    aiAssistant = false,
+    wordLimit = "100",
+    numberOfPages = "6",
+  } = route.params || {};
+
   const [messages, setMessages] = useState([]);
-  const navigation = useNavigation();
 
-  const onSignOut = () => {
-    signOut(auth).catch((error) => console.log('Error Loggin out', error));
+  useEffect(() => {
+    setMessages([
+      {
+        _id: 1,
+        text: `Welcome to a story about "${topic}".\nAI: ${aiAssistant}\nWord Limit: ${wordLimit}\nPages: ${numberOfPages}`,
+        createdAt: new Date(),
+        user: { _id: 2, name: "System" },
+      },
+    ]);
+  }, [topic, aiAssistant, wordLimit]);
+
+  const onSend = (newMessages = []) => {
+    setMessages((previousMessages) =>
+      GiftedChat.append(previousMessages, newMessages)
+    );
   };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity
-          style={{
-            marginRight: 10,
-          }}
-          onPress={onSignOut}
-        >
-          <AntDesign
-            name="logout"
-            size={24}
-            //color={colors.gray}
-            style={{ marginRight: 10 }}
-          />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
-  useLayoutEffect(() => {
-    const collectionRef = collection(db, 'chats');
-    const q = query(collectionRef, orderBy('createdAt', 'desc'));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      console.log('snapshot');
-      setMessages(
-        snapshot.docs.map((doc) => ({
-          _id: doc.id,
-          createdAt: doc.data().createdAt,
-          text: doc.data().text,
-          user: doc.data().user,
-        }))
-      );
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const onSend = useCallback((messages = []) => {
-    setMessages((previousMessages) =>
-      GiftedChat.append(previousMessages, messages)
-    );
-    const { _id, createdAt, text, user } = messages[0];
-    addDoc(collection(db, 'chats'), { _id, createdAt, text, user });
-  }, []);
-
   return (
-    <PageLayout currentTab={'Chats'}>
-      <GiftedChat
-        messages={messages}
-        onSend={(messages) => onSend(messages)}
-        user={{ _id: auth?.currentUser?.email }}
-      />
-    </PageLayout>
+    <GiftedChat
+      messages={messages}
+      onSend={onSend}
+      user={{ _id: 1, name: "You" }}
+    />
   );
 }

@@ -4,26 +4,27 @@ import {
   Text,
   View,
   ActivityIndicator,
-} from 'react-native';
-import React, { createContext, useEffect, useState, useContext } from 'react';
+} from "react-native";
+import React, { createContext, useEffect, useState, useContext } from "react";
 
-import { onAuthStateChanged } from 'firebase/auth';
-import { StatusBar } from 'expo-status-bar';
-import { auth } from './firebase/config';
+import { onAuthStateChanged } from "firebase/auth";
+import { StatusBar } from "expo-status-bar";
+import { auth } from "./firebase/config";
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 
-import LandingPage from './src/screens/LandingPage';
-import Chat from './src/screens/Chats';
-import Login from './src/screens/Login';
-import Sugnup from './src/screens/Sugnup';
-import Search from './src/screens/SearchPage';
-import NewStory from './src/screens/NewStoryPage';
-import StoryRooms from './src/screens/StoryRoomsPage';
-import Profile from './src/screens/ProfilePage';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import LandingPage from "./src/screens/LandingPage";
+import Chat from "./src/screens/Chats";
+import ChatsFlowStack from "./src/navigation/ChatsFlowStack";
+import Login from "./src/screens/Login";
+import Sugnup from "./src/screens/Sugnup";
+import Search from "./src/screens/SearchPage";
+import NewStory from "./src/screens/NewStoryPage";
+import StoryRooms from "./src/screens/StoryRoomsPage";
+import Profile from "./src/screens/ProfilePage";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const Stack = createStackNavigator();
 const AuthenticatedUserContext = createContext({});
@@ -51,7 +52,8 @@ function ChatStack() {
           <Stack.Screen name="New Story" component={NewStory} />
           <Stack.Screen name="Story Rooms" component={StoryRooms} />
           <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="Chats" component={Chat} />
+          {/* <Stack.Screen name="Chats" component={Chat} /> */}
+          <Stack.Screen name="Chats" component={ChatsFlowStack} />
         </Stack.Navigator>
         <StatusBar style="auto" />
       </SafeAreaProvider>
@@ -87,7 +89,7 @@ function RootNavigator() {
   }, [user]);
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -114,20 +116,20 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    backgroundColor: '#f2f2f2',
-    alignItems: 'center',
+    backgroundColor: "#f2f2f2",
+    alignItems: "center",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: 'normal',
+    fontWeight: "normal",
   },
   video: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
 });
