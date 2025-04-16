@@ -1,6 +1,6 @@
-import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import NavBar from "../navigation/NavBar";
+import React from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import NavBar from '../navigation/NavBar';
 
 const PageLayout = ({ children, currentTab, scrollable = false }) => {
   const ContentWrapper = scrollable ? ScrollView : View;
@@ -21,7 +21,7 @@ const PageLayout = ({ children, currentTab, scrollable = false }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e6f0fa",
+    backgroundColor: '#e6f0fa',
   },
   content: {
     flex: 1,
