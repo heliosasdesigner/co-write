@@ -18,6 +18,10 @@ import LandingPage from './src/screens/LandingPage';
 import Chat from './src/screens/Chats';
 import Login from './src/screens/Login';
 import Sugnup from './src/screens/Sugnup';
+import Search from './src/screens/SearchPage'
+import NewStory from './src/screens/NewStoryPage'
+import StoryRooms from './src/screens/StoryRoomsPage'
+import Profile from './src/screens/ProfilePage'
 
 const Stack = createStackNavigator();
 const AuthenticatedUserContext = createContext({});
@@ -33,12 +37,23 @@ const AuthenticatedUserProvider = ({ children }) => {
 
 function ChatStack() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="LandingPage" component={LandingPage} />
-      <Stack.Screen name="Chat" component={Chat} />
-    </Stack.Navigator>
+<SafeAreaProvider>
+      <StatusBar style="auto" />
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={LandingPage} />
+          <Stack.Screen name="Search" component={Search} />
+          <Stack.Screen name="New Story" component={NewStory} />
+          <Stack.Screen name="Story Rooms" component={StoryRooms} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="Chat" component={Chat} />
+        </Stack.Navigator>
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
+
 
 function AuthStack() {
   return (

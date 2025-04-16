@@ -1,29 +1,20 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { ScrollView, StyleSheet } from 'react-native';
 import Header from '../components/Header';
-import NavBar from '../navigation/NavBar';
 import StoryCard from '../components/StoryCard';
-import { Entypo } from '@expo/vector-icons';
+import PageLayout from '../components/PageLayout';
 
 const LandingPage = () => {
   const navigation = useNavigation();
   return (
-    <View style={styles.container}>
+    <PageLayout currentTab="Home" scrollable>
       <Header />
       <ScrollView contentContainerStyle={styles.grid}>
         {[...Array(12)].map((_, idx) => (
           <StoryCard key={idx} />
         ))}
       </ScrollView>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('Chat')}
-        style={styles.chatButton}
-      >
-        <Entypo name="chat" size={24} />
-      </TouchableOpacity>
-      <NavBar />
-    </View>
+    </PageLayout>
   );
 };
 
