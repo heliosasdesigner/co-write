@@ -26,7 +26,7 @@ export default function App() {
         <Text style={styles.title}>Hello! this is co-write</Text>
         <Text style={styles.subtitle}>This is a subtitle</Text>
       </View>
-      <LLMPoc />
+
       <LandingPage />
       <StatusBar style="auto" />
     </SafeAreaView>
