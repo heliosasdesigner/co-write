@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet } from 'react-native';
 import Header from '../components/Header';
 import StoryCard from '../components/StoryCard';
 import PageLayout from '../components/PageLayout';
+import { useNavigation } from '@react-navigation/native';
 
 const LandingPage = () => {
   const navigation = useNavigation();

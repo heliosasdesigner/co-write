@@ -1,5 +1,3 @@
-import 'react-native-reanimated';
-import React, { createContext, useEffect, useState, useContext } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -7,6 +5,8 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import React, { createContext, useEffect, useState, useContext } from 'react';
+
 import { onAuthStateChanged } from 'firebase/auth';
 import { StatusBar } from 'expo-status-bar';
 import { auth } from './firebase/config';
@@ -18,10 +18,12 @@ import LandingPage from './src/screens/LandingPage';
 import Chat from './src/screens/Chats';
 import Login from './src/screens/Login';
 import Sugnup from './src/screens/Sugnup';
-import Search from './src/screens/SearchPage'
-import NewStory from './src/screens/NewStoryPage'
-import StoryRooms from './src/screens/StoryRoomsPage'
-import Profile from './src/screens/ProfilePage'
+import Search from './src/screens/SearchPage';
+import NewStory from './src/screens/NewStoryPage';
+import StoryRooms from './src/screens/StoryRoomsPage';
+import Profile from './src/screens/ProfilePage';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stack = createStackNavigator();
 const AuthenticatedUserContext = createContext({});
@@ -37,9 +39,12 @@ const AuthenticatedUserProvider = ({ children }) => {
 
 function ChatStack() {
   return (
-<SafeAreaProvider>
-      <StatusBar style="auto" />
-      <NavigationContainer>
+    <GestureHandlerRootView>
+      <SafeAreaProvider>
+        <View style={styles.header}>
+          <Text style={styles.title}>Hello! this is co-write</Text>
+          <Text style={styles.subtitle}>This is a subtitle</Text>
+        </View>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={LandingPage} />
           <Stack.Screen name="Search" component={Search} />
@@ -49,18 +54,19 @@ function ChatStack() {
           <Stack.Screen name="Chat" component={Chat} />
         </Stack.Navigator>
         <StatusBar style="auto" />
-      </NavigationContainer>
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
-
 function AuthStack() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="Sugnup" component={Sugnup} />
-    </Stack.Navigator>
+    <GestureHandlerRootView>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Sugnup" component={Sugnup} />
+      </Stack.Navigator>
+    </GestureHandlerRootView>
   );
 }
 
