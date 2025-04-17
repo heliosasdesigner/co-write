@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { GiftedChat } from "react-native-gifted-chat";
-import { Alert } from "react-native";
+import { GiftedChat, Composer, InputToolbar } from "react-native-gifted-chat";
+import { View, Text, Alert, StyleSheet } from "react-native";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import type { ChatsFlowParamList } from "../navigation/ChatsFlowStack";
 
@@ -16,6 +16,7 @@ export default function Chats() {
   } = route.params || {};
 
   const [messages, setMessages] = useState([]);
+  const [composerText, setComposerText] = useState("");
 
   useEffect(() => {
     setMessages([
@@ -53,13 +54,41 @@ export default function Chats() {
     setMessages((previousMessages) =>
       GiftedChat.append(previousMessages, newMessages)
     );
+    setComposerText("");
   };
+
+  const limit = parseInt(wordLimit, 10);
+  const wordsSoFar = composerText.trim().split(/\s+/).filter(Boolean).length;
+  const remaining = Math.max(limit - wordsSoFar, 0);
 
   return (
     <GiftedChat
       messages={messages}
       onSend={onSend}
       user={{ _id: 1, name: "You" }}
+      text={composerText}
+      onInputTextChanged={(text) => {
+        const words = text.trim().split(/\s+/).filter(Boolean).length;
+        if (words <= limit) {
+          setComposerText(text);
+        }
+      }}
+      renderAccessory={() => (
+        <View style={styles.accessory}>
+          <Text style={styles.counter}>{remaining} words remaining</Text>
+        </View>
+      )}
     />
   );
 }
+const styles = StyleSheet.create({
+  accessory: {
+    paddingHorizontal: 12,
+    paddingBottom: 4,
+  },
+  counter: {
+    alignSelf: "flex-end",
+    fontSize: 12,
+    color: "#666",
+  },
+});
