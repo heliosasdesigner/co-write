@@ -46,6 +46,7 @@ function ChatStack() {
           <Text style={styles.title}>Hello! this is co-write</Text>
           <Text style={styles.subtitle}>This is a subtitle</Text>
         </View>
+
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={LandingPage} />
           <Stack.Screen name="Search" component={Search} />
@@ -55,6 +56,7 @@ function ChatStack() {
           {/* <Stack.Screen name="Chats" component={Chat} /> */}
           <Stack.Screen name="Chats" component={ChatsFlowStack} />
         </Stack.Navigator>
+
         <StatusBar style="auto" />
       </SafeAreaProvider>
     </GestureHandlerRootView>
