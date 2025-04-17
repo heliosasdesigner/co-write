@@ -1,11 +1,17 @@
 import React from "react";
 import { Text, StyleSheet } from "react-native";
 import PageLayout from "../components/PageLayout";
+import OpenRouter from "../components/OpenRouter";
 
+import ExampleImageGeneration from "../components/ExampleImageGeneration";
+import ExampleResponseStream from "../components/ExampleResponseStream";
 const NewStoryPage = () => {
   return (
     <PageLayout currentTab="New Story">
-      <Text style={styles.title}>Create a New Story</Text>
+      <ExampleImageGeneration />
+      <ExampleResponseStream />
+      <Text style={styles.title}>OpenRouter:</Text>
+      <OpenRouter />
     </PageLayout>
   );
 };
