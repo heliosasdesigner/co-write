@@ -1,7 +1,9 @@
 import React from "react";
 import { Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import PageLayout from "../components/PageLayout";
-
+import OpenRouter from "../components/OpenRouter";
+import ExampleResponseStream from "../components/ExampleResponseStream";
+import ExampleImageGeneration from "../components/ExampleImageGeneration";
 const mockRooms = [
   { id: "1", title: "story 1" },
   { id: "2", title: "story 2" },
@@ -12,6 +14,8 @@ const StoryRoomsPage = () => {
   return (
     <PageLayout currentTab="Story Rooms">
       <Text style={styles.title}>Story Rooms</Text>
+      <ExampleImageGeneration />
+      <ExampleResponseStream />
       <FlatList
         data={mockRooms}
         keyExtractor={(item) => item.id}
