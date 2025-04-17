@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,18 +12,31 @@ import {
   Alert,
 } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase/config';
+import { auth, db } from '../../firebase/config';
+import { doc, setDoc } from 'firebase/firestore';
+import { AuthenticatedUserContext } from '../contexts/AuthenticatedUser';
 const backImage = require('../../assets/backImage.png');
 
 export default function Sugnup({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const { user } = useContext(AuthenticatedUserContext);
 
-  const onHandleSignup = () => {
-    if (email !== '' && password !== '') {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => console.log('Signup success'))
-        .catch((err) => Alert.alert('Signup error', err.message));
+  const onHandleSignup = async () => {
+    try {
+      if (email !== '' && password !== '') {
+        await createUserWithEmailAndPassword(auth, email, password);
+        console.log('Signup success');
+        await setDoc(doc(db, 'users', email), {
+          email: email,
+          password: password,
+          username: username,
+        });
+      }
+    } catch (err) {
+      console.log('Signup Error', err);
+      Alert.alert('Signup error');
     }
   };
   return (
@@ -51,6 +64,15 @@ export default function Sugnup({ navigation }) {
           textContentType="password"
           value={password}
           onChangeText={(text) => setPassword(text)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter a username"
+          autoCapitalize="none"
+          textContentType="username"
+          autoFocus={true}
+          value={username}
+          onChangeText={(text) => setUsername(text)}
         />
         <TouchableOpacity style={styles.button} onPress={onHandleSignup}>
           <Text style={{ fontWeight: 'bold', color: '#fff', fontSize: 18 }}>

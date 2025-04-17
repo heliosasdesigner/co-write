@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import PageLayout from "../components/PageLayout";
+import OpenRouter from "../components/OpenRouter";
 
 const mockRooms = [
   { id: "1", title: "story 1" },
@@ -11,7 +12,10 @@ const mockRooms = [
 const StoryRoomsPage = () => {
   return (
     <PageLayout currentTab="Story Rooms">
+      <OpenRouter />
       <Text style={styles.title}>Story Rooms</Text>
+      <ExampleImageGeneration />
+      <ExampleResponseStream />
       <FlatList
         data={mockRooms}
         keyExtractor={(item) => item.id}
