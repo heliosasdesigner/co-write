@@ -28,7 +28,7 @@ export default function Sugnup({ navigation }) {
       if (email !== '' && password !== '') {
         await createUserWithEmailAndPassword(auth, email, password);
         console.log('Signup success');
-        await setDoc(doc(db, 'users', username), {
+        await setDoc(doc(db, 'users', email), {
           email: email,
           password: password,
           username: username,
