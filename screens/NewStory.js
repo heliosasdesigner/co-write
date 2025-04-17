@@ -3,76 +3,87 @@ import {
   View,
   Text,
   TextInput,
+  StyleSheet,
   Switch,
   Button,
-  StyleSheet,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import type { StackNavigationProp } from "@react-navigation/stack";
-import type { ChatsFlowParamList } from "../navigation/ChatsFlowStack";
 
-type NewStoryNavProp = StackNavigationProp<ChatsFlowParamList, "NewStory">;
-
-export default function NewStoryPage() {
-  const navigation = useNavigation<NewStoryNavProp>();
+const NewStory = () => {
+  const navigation = useNavigation();
 
   const [topic, setTopic] = useState("");
   const [aiAssistant, setAiAssistant] = useState(false);
+  const [numPages, setNumPages] = useState("1");
   const [wordLimit, setWordLimit] = useState("100");
-  const [pageLimit, setPageLimit] = useState("6");
 
   const handleStart = () => {
-    navigation.navigate("ChatConversation", {
+    navigation.navigate("Chats", {
       topic,
       aiAssistant,
+      numPages,
       wordLimit,
-      numberOfPages: pageLimit,
     });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create a New Story</Text>
+      <Text style={styles.title}>New Story Setup</Text>
 
-      <Text>Topic:</Text>
+      <Text style={styles.label}>Topic</Text>
       <TextInput
         style={styles.input}
+        placeholder="Enter a story topic"
         value={topic}
         onChangeText={setTopic}
-        placeholder="Type a topic..."
       />
 
-      <Text>AI Assistant?</Text>
+      <Text style={styles.label}>AI Assistant?</Text>
       <Switch value={aiAssistant} onValueChange={setAiAssistant} />
 
-      <Text>Word Limit:</Text>
+      <Text style={styles.label}>Number of Pages</Text>
       <TextInput
         style={styles.input}
-        value={wordLimit}
-        onChangeText={setWordLimit}
         keyboardType="numeric"
+        value={numPages}
+        onChangeText={setNumPages}
       />
 
-      <Text>Page Limit:</Text>
+      <Text style={styles.label}>Word Limit</Text>
       <TextInput
         style={styles.input}
-        value={pageLimit}
-        onChangeText={setPageLimit}
         keyboardType="numeric"
+        value={wordLimit}
+        onChangeText={setWordLimit}
       />
 
       <Button title="Start" onPress={handleStart} />
     </View>
   );
-}
+};
+
+export default NewStory;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 12 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#ffffff",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  label: {
+    marginTop: 10,
+    fontSize: 16,
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
+    borderRadius: 4,
+    marginTop: 5,
     padding: 8,
-    marginBottom: 10,
   },
 });
