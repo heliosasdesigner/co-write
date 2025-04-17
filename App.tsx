@@ -1,3 +1,4 @@
+
 import {
   SafeAreaView,
   StyleSheet,
@@ -13,6 +14,7 @@ import { auth } from './firebase/config';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+
 
 import LandingPage from './src/screens/LandingPage';
 import Chat from './src/screens/Chats';
@@ -39,6 +41,7 @@ const AuthenticatedUserProvider = ({ children }) => {
 
 function ChatStack() {
   return (
+
     <GestureHandlerRootView>
       <SafeAreaProvider>
         <View style={styles.header}>
@@ -54,6 +57,7 @@ function ChatStack() {
           <Stack.Screen name="Chats" component={Chat} />
         </Stack.Navigator>
         <StatusBar style="auto" />
+
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
