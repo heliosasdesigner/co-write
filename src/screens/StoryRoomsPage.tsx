@@ -14,6 +14,8 @@ const StoryRoomsPage = () => {
     <PageLayout currentTab="Story Rooms">
       <OpenRouter />
       <Text style={styles.title}>Story Rooms</Text>
+      <ExampleImageGeneration />
+      <ExampleResponseStream />
       <FlatList
         data={mockRooms}
         keyExtractor={(item) => item.id}

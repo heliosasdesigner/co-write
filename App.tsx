@@ -4,6 +4,7 @@ import {
   Text,
   View,
   ActivityIndicator,
+
 } from "react-native";
 import React, { createContext, useEffect, useState, useContext } from "react";
 
@@ -26,17 +27,14 @@ import Profile from "./src/screens/ProfilePage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-const Stack = createStackNavigator();
-const AuthenticatedUserContext = createContext({});
 
-const AuthenticatedUserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  return (
-    <AuthenticatedUserContext.Provider value={{ user, setUser }}>
-      {children}
-    </AuthenticatedUserContext.Provider>
-  );
-};
+import {
+  AuthenticatedUserProvider,
+  AuthenticatedUserContext,
+} from './src/contexts/AuthenticatedUser';
+
+
+const Stack = createStackNavigator();
 
 function ChatStack() {
   return (
