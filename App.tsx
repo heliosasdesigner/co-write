@@ -20,7 +20,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import LandingPage from './src/screens/LandingPage';
 import Chat from './src/screens/Chats';
 import Login from './src/screens/Login';
-import Sugnup from './src/screens/Sugnup';
+import Sugnup from './src/screens/Signup';
 import Search from './src/screens/SearchPage';
 import NewStory from './src/screens/NewStoryPage';
 import StoryRooms from './src/screens/StoryRoomsPage';

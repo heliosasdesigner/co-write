@@ -1,10 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import NavBar from '../navigation/NavBar';
-
 const PageLayout = ({ children, currentTab, scrollable = false }) => {
   const ContentWrapper = scrollable ? ScrollView : View;
-
   return (
     <View style={styles.container}>
       <ContentWrapper
@@ -17,7 +15,6 @@ const PageLayout = ({ children, currentTab, scrollable = false }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -32,5 +29,4 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
 });
-
 export default PageLayout;
