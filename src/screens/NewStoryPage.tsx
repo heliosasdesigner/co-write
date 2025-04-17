@@ -1,4 +1,3 @@
-// src/screens/NewStoryPage.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -20,13 +19,14 @@ export default function NewStoryPage() {
   const [topic, setTopic] = useState("");
   const [aiAssistant, setAiAssistant] = useState(false);
   const [wordLimit, setWordLimit] = useState("100");
+  const [pageLimit, setPageLimit] = useState("6");
 
   const handleStart = () => {
-    // Navigate to the chat screen with these parameters
     navigation.navigate("ChatConversation", {
       topic,
       aiAssistant,
       wordLimit,
+      numberOfPages: pageLimit,
     });
   };
 
@@ -50,6 +50,14 @@ export default function NewStoryPage() {
         style={styles.input}
         value={wordLimit}
         onChangeText={setWordLimit}
+        keyboardType="numeric"
+      />
+
+      <Text>Page Limit:</Text>
+      <TextInput
+        style={styles.input}
+        value={pageLimit}
+        onChangeText={setPageLimit}
         keyboardType="numeric"
       />
 

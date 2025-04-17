@@ -1,7 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import NewStoryPage from "../screens/NewStoryPage";
-import Chats from "../screens/Chats"; // the existing Chats.tsx
+import Chats from "../screens/Chats";
 import { StyleSheet, View } from "react-native";
 import NavBar from "./NavBar";
 
