@@ -1,4 +1,5 @@
 
+
 import {
   SafeAreaView,
   StyleSheet,
@@ -42,12 +43,14 @@ const AuthenticatedUserProvider = ({ children }) => {
 function ChatStack() {
   return (
 
+
     <GestureHandlerRootView>
       <SafeAreaProvider>
         <View style={styles.header}>
           <Text style={styles.title}>Hello! this is co-write</Text>
           <Text style={styles.subtitle}>This is a subtitle</Text>
         </View>
+
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={LandingPage} />
           <Stack.Screen name="Search" component={Search} />
@@ -56,7 +59,9 @@ function ChatStack() {
           <Stack.Screen name="Profile" component={Profile} />
           <Stack.Screen name="Chats" component={Chat} />
         </Stack.Navigator>
+
         <StatusBar style="auto" />
+
 
       </SafeAreaProvider>
     </GestureHandlerRootView>
