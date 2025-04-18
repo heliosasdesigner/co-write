@@ -1,41 +1,75 @@
 import { View, Text, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { collection, query, orderBy, where, onSnapshot, addDoc, setDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db, auth } from '../../firebase/config'
-import { onAuthStateChanged } from 'firebase/auth'
 import React, { useEffect, useState, useRef } from 'react'
+import { RouteProp, useRoute } from '@react-navigation/native'
 
-const ChatScreen = ({route}) => {
+type RootStackParamList = {
+    ChatScreen: { chatId: string }
+}
+  
+type ChatScreenRouteProp = RouteProp<RootStackParamList, 'ChatScreen'>
+  
+type Message = {
+    id: string;
+    senderId: string;
+    text: string;
+    timestamp: any;
+}
+
+const ChatScreen = () => {
+    const route = useRoute<ChatScreenRouteProp>()
     const {chatId} = route.params
-    const [messages, setMessages] = useState([])
+    const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
-    const flatListRef = useRef(null)
+    const [wordLimit, setWordLimit] = useState<number | null>(null)
+    const flatListRef = useRef<FlatList>(null)
 
     const user = auth.currentUser
-    const [chats, setChats] = useState([])
+
+    useEffect(() => {
+        const fetchChatSettings = async() => {
+            const chatRef = doc(db, 'chats', chatId)
+            const chatSnap = await getDoc(chatRef)
+            if(chatSnap.exists()) {
+                const data = chatSnap.data()
+                if(data.wordLimit) setWordLimit(data.wordLimit)
+            }
+        }
+        fetchChatSettings()
+    }, [chatId])
 
     useEffect(() => {
         const messagesRef = collection(db, 'chats', chatId, 'messages')
         const q = query(messagesRef, orderBy('timestamp', 'asc'))
         
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map((doc) => ({
+            const loadedMessages: Message[] = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data()
-            }))
-            setMessages(data)
+            } as Message))
+            setMessages(loadedMessages)
         })
 
             return () => unsubscribe()
         }, [chatId])
     
-    const handleSend = async() => {
-        if(!input.trim()) return
+    const wordCount = input.trim().split(/\s+/).filter(Boolean).length
+    const overLimit = wordLimit !== null && wordCount > wordLimit
 
-        const messagesRef = collection(db, 'chats', chatId, 'messages')
-        await addDoc(messagesRef, {
-            senderId: updateCurrentUser.uid,
+    const handleSend = async() => {
+        if(!input.trim() || !user || overLimit) return
+
+        const messageData = {
             text: input.trim(),
+            senderId: user.uid,
             timestamp: serverTimestamp(),
+        }
+
+        await addDoc(collection(db, 'chats', chatId, 'messages'), messageData)
+        await updateDoc(doc(db, 'chats', chatId), {
+            lastMessage: input.trim(),
+            lastMessageTimestamp: serverTimestamp(),
         })
 
         setInput('')
@@ -55,7 +89,7 @@ const ChatScreen = ({route}) => {
                 <View
                     style={[
                     styles.messageBubble,
-                    item.senderId === currentUser.uid
+                    item.senderId === user?.uid
                         ? styles.myMessage
                         : styles.theirMessage
                     ]}
@@ -70,14 +104,26 @@ const ChatScreen = ({route}) => {
                 }
             />
 
+            {wordLimit !== null && (
+                <Text
+                style={{
+                    textAlign: 'right',
+                    marginRight: 10,
+                    color: overLimit ? 'red' : 'gray',
+                }}
+                >
+                {wordCount}/{wordLimit} words
+                </Text>
+            )}
+
             <View style={styles.inputContainer}>
                 <TextInput
-                    placeholder="Type a message..."
+                    placeholder="Write your turn..."
                     value={input}
                     onChangeText={setInput}
                     style={styles.input}
                 />
-                <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+                <TouchableOpacity onPress={handleSend} style={[styles.sendButton, overLimit && {backgroundColor: '#ccc'}]} disabled={overLimit}>
                     <Text style={styles.sendText}>Send</Text>
                 </TouchableOpacity>
             </View>
