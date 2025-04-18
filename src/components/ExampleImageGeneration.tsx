@@ -1,14 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Image } from "react-native";
 import { useImageRequest } from "../hooks/useImageRequest";
+import { uploadSectionImages } from "../../api/stories";
 
 const ExampleImageGeneration = () => {
   const [draftPrompt, setDraftPrompt] = useState<string>("");
   const { imageUrl, isLoading, error, setImagePrompt } = useImageRequest();
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    console.log(draftPrompt);
     setImagePrompt(draftPrompt);
   }
+
+  useEffect(() => {
+    if (!imageUrl) return;
+    const storyId = "NIlJsOjsvhFEC6CSPJRO";
+    console.log("handleImageUpload hit!!!");
+    console.log(imageUrl);
+
+    uploadSectionImages(imageUrl, storyId)
+      .then((url) => {
+        console.log("url", url);
+      })
+      .catch((error) => {
+        console.error("Error uploading image:", error);
+      });
+  }, [imageUrl]);
 
   return (
     <View>
