@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GiftedChat } from 'react-native-gifted-chat';
 import {
   View,
   Text,
@@ -24,7 +23,6 @@ import {
   addDoc,
 } from 'firebase/firestore';
 import { db, auth } from '../../firebase/config';
-import PageLayout from '../components/PageLayout';
 
 type ChatScreenRouteProp = RouteProp<ChatsFlowParamList, 'ChatConversation'>;
 
@@ -38,12 +36,17 @@ export default function Chats() {
   } = route.params || {};
 
   const [messages, setMessages] = useState<any[]>([]);
-  const [composerText, setComposerText] = useState('');
   const [input, setInput] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [hintText, setHintText] = useState('');
   const [loadingHint, setLoadingHint] = useState(false);
   const flatListRef = useRef(null);
+  const pagesAllowed = parseInt(numberOfPages, 10);
+  const userPages = messages.length - 1;
+  const wordLimitInteger = parseInt(wordLimit, 10);
+  const [composerText, setComposerText] = useState('');
+  const wordsUsed = composerText.trim().split(/\s+/).filter(Boolean).length;
+  const remaining = Math.max(wordLimitInteger - wordsUsed, 0);
 
   const storySettings = {
     _id: 1,
@@ -80,6 +83,7 @@ export default function Chats() {
         .filter(Boolean);
       const messagesWithSettingsAtTop = [storySettings, ...loadedMessages];
       setMessages(messagesWithSettingsAtTop);
+      setComposerText('');
     });
 
     return () => unsubscribe();
@@ -108,9 +112,16 @@ export default function Chats() {
     }
   };
 
-  const onSend = (newMessages: any[] = []) => {
-    const pagesAllowed = parseInt(numberOfPages, 10);
-    const userPages = messages.filter((m) => m.user._id === 1).length;
+  const handleSend = () => {
+    const newMessage = {
+      _id: Date.now().toString(),
+      text: input.trim(),
+      createdAt: new Date(),
+      user: { _id: auth?.currentUser?.email },
+    };
+
+    if (!input.trim()) return;
+
     if (userPages >= pagesAllowed) {
       Alert.alert(
         'Page limit reached',
@@ -119,37 +130,21 @@ export default function Chats() {
       return;
     }
 
-    const limitNum = parseInt(wordLimit, 10);
-    const incomingText = newMessages[0]?.text?.trim() || '';
+    const incomingText = newMessage?.text?.trim() || '';
     const wordCount = incomingText.split(/\s+/).filter(Boolean).length;
-    if (wordCount > limitNum) {
+    if (wordCount > wordLimitInteger) {
       Alert.alert(
         'Word limit exceeded',
-        `Your message is ${wordCount} words; limit is ${limitNum}.`
+        `Your page is ${wordCount} words; limit is ${wordLimitInteger}.`
       );
       return;
     }
-  };
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    const newMessage = {
-      _id: Date.now().toString(),
-      text: input.trim(),
-      createdAt: new Date(),
-      user: { _id: auth?.currentUser?.email },
-    };
 
     setMessages((prev) => [...prev, newMessage]);
     setInput('');
     flatListRef.current?.scrollToEnd({ animated: true });
     addDoc(collection(db, 'chats'), newMessage);
   };
-
-  const limitNum = parseInt(wordLimit, 10);
-  const wordsUsed = composerText.trim().split(/\s+/).filter(Boolean).length;
-  const remaining = Math.max(limitNum - wordsUsed, 0);
 
   return (
     <View style={(styles.container, { flex: 1 })}>
@@ -201,7 +196,13 @@ export default function Chats() {
         <View style={styles.inputContainer}>
           <TextInput
             value={input}
-            onChangeText={setInput}
+            onChangeText={(text) => {
+              setInput(text);
+              const words = text.trim().split(/\s+/).filter(Boolean).length;
+              if (words <= wordLimitInteger) {
+                setComposerText(text);
+              }
+            }}
             placeholder="Write your message..."
             style={styles.input}
             multiline
@@ -210,6 +211,14 @@ export default function Chats() {
             <Text style={{ color: '#fff' }}>Send</Text>
           </TouchableOpacity>
         </View>
+        <Text
+          style={{
+            marginTop: 8,
+            color: remaining < 0 ? 'red' : 'black',
+          }}
+        >
+          Remaining Words: {remaining}
+        </Text>
       </KeyboardAvoidingView>
     </View>
   );
