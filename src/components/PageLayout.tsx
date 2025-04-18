@@ -1,8 +1,26 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import NavBar from '../navigation/NavBar';
+import React from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
+import NavBar from "../navigation/NavBar";
 
-const PageLayout = ({ children, currentTab, scrollable = false }) => {
+type RootStackParamList = {
+  Home: undefined;
+  Search: undefined;
+  "New Story": undefined;
+  "Story Rooms": undefined;
+  Profile: undefined;
+};
+
+type PageLayoutProps = {
+  children: React.ReactNode;
+  currentTab: keyof RootStackParamList;
+  scrollable?: boolean;
+};
+
+const PageLayout: React.FC<PageLayoutProps> = ({
+  children,
+  currentTab,
+  scrollable = false,
+}) => {
   const ContentWrapper = scrollable ? ScrollView : View;
 
   return (
@@ -21,7 +39,7 @@ const PageLayout = ({ children, currentTab, scrollable = false }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e6f0fa',
+    backgroundColor: "#e6f0fa",
   },
   content: {
     flex: 1,

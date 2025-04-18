@@ -8,9 +8,11 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  query,
+  where,
+  orderBy,
 } from "firebase/firestore";
 import { uploadBytes, getDownloadURL, ref } from "firebase/storage";
-import { downloadBlob } from "../src/utilities/dbHelper";
 
 export interface Story {
   id: string;
@@ -22,11 +24,27 @@ export interface Story {
   votes: number;
   createdAt: Timestamp;
   joinUser: string[];
+  aiAssistant?: boolean;
+  wordLimit?: string;
+  pageLimit?: string;
 }
 
 export const getStories = async (): Promise<Story[]> => {
   const storiesCollection = collection(db, "stories");
   const storiesSnapshot = await getDocs(storiesCollection);
+  return storiesSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Story[];
+};
+
+export const getUserStories = async (username: string): Promise<Story[]> => {
+  const storiesCollection = collection(db, "stories");
+  const q = query(
+    storiesCollection,
+    where("joinUser", "array-contains", username)
+  );
+  const storiesSnapshot = await getDocs(q);
   return storiesSnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -90,4 +108,72 @@ export const uploadSectionImages = async (
   console.log("✅ Added URL to Firestore document");
 
   return url;
+};
+
+export const createInitialChat = async (
+  storyId: string,
+  topic: string,
+  aiAssistant: boolean,
+  wordLimit: string,
+  numberOfPages: string
+) => {
+  try {
+    const chatCollectionRef = collection(db, `stories/${storyId}/chats`);
+    const initialMessage = {
+      text: `Welcome to a story about "${topic}".\nAI: ${aiAssistant}\nWord Limit: ${wordLimit}\nPages: ${numberOfPages}`,
+      createdAt: serverTimestamp(),
+      user: { _id: "System" },
+    };
+
+    await addDoc(chatCollectionRef, initialMessage);
+  } catch (err) {
+    console.error("Error creating initial chat: ", err);
+    throw err;
+  }
+};
+
+// Add types and functions for chat messages
+export interface ChatMessage {
+  id: string;
+  text: string;
+  createdAt: Timestamp;
+  user: {
+    _id: string;
+  };
+}
+
+export const getStoryChats = async (
+  storyId: string
+): Promise<ChatMessage[]> => {
+  try {
+    const chatCollectionRef = collection(db, `stories/${storyId}/chats`);
+    const q = query(chatCollectionRef, orderBy("createdAt", "asc"));
+    const chatsSnapshot = await getDocs(q);
+
+    return chatsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as ChatMessage[];
+  } catch (err) {
+    console.error("Error fetching story chats:", err);
+    throw err;
+  }
+};
+
+export const addChatMessage = async (
+  storyId: string,
+  message: Omit<ChatMessage, "id" | "createdAt">
+) => {
+  try {
+    const chatCollectionRef = collection(db, `stories/${storyId}/chats`);
+    const messageWithTimestamp = {
+      ...message,
+      createdAt: serverTimestamp(),
+    };
+
+    await addDoc(chatCollectionRef, messageWithTimestamp);
+  } catch (err) {
+    console.error("Error adding chat message:", err);
+    throw err;
+  }
 };
