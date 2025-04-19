@@ -17,7 +17,11 @@ import { createStackNavigator } from "@react-navigation/stack";
 import LandingPage from "./src/screens/LandingPage";
 import Login from "./src/screens/Login";
 import Sugnup from "./src/screens/Sugnup";
-import ChatsFlowStack from "./src/navigation/ChatsFlowStack";
+import NavBar from "./src/navigation/NavBar";
+import SearchPage from "./src/screens/SearchPage";
+import NewStoryPage from "./src/screens/NewStoryPage";
+import StoryRoomsPage from "./src/screens/StoryRoomsPage";
+import ProfilePage from "./src/screens/ProfilePage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -34,6 +38,21 @@ function AuthStack() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Sugnup" component={Sugnup} />
+      </Stack.Navigator>
+    </GestureHandlerRootView>
+  );
+}
+
+function MainStack() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Landing" component={LandingPage} />
+        <Stack.Screen name="Home" component={LandingPage} />
+        <Stack.Screen name="Search" component={SearchPage} />
+        <Stack.Screen name="New Story" component={NewStoryPage} />
+        <Stack.Screen name="Story Rooms" component={StoryRoomsPage} />
+        <Stack.Screen name="Profile" component={ProfilePage} />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
@@ -64,7 +83,7 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {user ? <ChatsFlowStack /> : <AuthStack />}
+      {user ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }
