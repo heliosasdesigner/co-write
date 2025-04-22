@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#e6f0fa",
   },
-
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -72,6 +71,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 8,
     paddingBottom: 80,
+  },
+  newStoryButton: {
+    margin: 12,
+    padding: 12,
+    backgroundColor: "#4287f5",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  newStoryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   chatButton: {
     height: 50,

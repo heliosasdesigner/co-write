@@ -1,57 +1,80 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
 import { Picker } from "@react-native-picker/picker";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { auth, db } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
 
-const stories = [
-  { title: "Story 1", date: "2023-04-01" },
-  { title: "Story 2", date: "2023-03-25" },
-  { title: "Story 3", date: "2023-03-10" },
-];
-
 const ProfilePage = () => {
-  const [filter, setFilter] = React.useState("date");
+  const [filter, setFilter] = useState("date");
+  const [stories, setStories] = useState([]);
+  const user = auth.currentUser;
+
+  useEffect(() => {
+    const fetchUserStories = async () => {
+      try {
+        if (!user) return;
+
+        const q = query(collection(db, "stories"), where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setStories(data);
+      } catch (err) {
+        console.error("Error fetching stories:", err);
+      }
+    };
+
+    fetchUserStories();
+  }, [user]);
 
   const sortedStories = [...stories].sort((a, b) => {
     if (filter === "az") {
       return a.title.localeCompare(b.title);
     } else {
-      return new Date(b.date).getTime() - new Date(a.date).getTime();
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
   });
 
   return (
-    <PageLayout currentTab="Profile">
-      {/* Avatar & Username */}
-      <Text style={styles.avatar}>👤</Text>
-      <Text style={styles.username}>Username Placeholder</Text>
-      <Text style={styles.bio}>Short Bio (optional)</Text>
+      <PageLayout currentTab="Profile">
+        {/* Avatar & Username */}
+        <Text style={styles.avatar}>👤</Text>
+        <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
+        <Text style={styles.bio}>Short Bio (optional)</Text>
 
-      {/* Filter Section */}
-      <View style={styles.filterRow}>
-        <Text style={styles.filterLabel}>Filter:</Text>
-        <Picker
-          selectedValue={filter}
-          style={styles.picker}
-          onValueChange={(itemValue: string) => setFilter(itemValue)}
-        >
-          <Picker.Item label="Date Made" value="date" />
-          <Picker.Item label="A - Z" value="az" />
-        </Picker>
-      </View>
+        {/* Filter Section */}
+        <View style={styles.filterRow}>
+          <Text style={styles.filterLabel}>Filter:</Text>
+          <Picker
+              selectedValue={filter}
+              style={styles.picker}
+              onValueChange={(itemValue) => setFilter(itemValue)}
+          >
+            <Picker.Item label="Date Made" value="date" />
+            <Picker.Item label="A - Z" value="az" />
+          </Picker>
+        </View>
 
-      {/* Past Stories */}
-      <Text style={styles.sectionTitle}>PAST STORIES</Text>
-      <FlatList
-        data={sortedStories}
-        keyExtractor={(item, index) => `${item.title}-${index}`}
-        renderItem={({ item, index }) => (
-          <Text style={styles.storyItem}>
-            {index + 1}. {item.title}
-          </Text>
-        )}
-      />
-    </PageLayout>
+        {/* Past Stories */}
+        <Text style={styles.sectionTitle}>PAST STORIES</Text>
+        <FlatList
+            data={sortedStories}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
+            renderItem={({ item, index }) => (
+                <Text style={styles.storyItem}>
+                  {index + 1}. {item.title}
+                </Text>
+            )}
+            ListEmptyComponent={
+              <Text style={{ textAlign: "center", color: "#999", marginTop: 20 }}>
+                No stories found.
+              </Text>
+            }
+        />
+      </PageLayout>
   );
 };
 

@@ -22,7 +22,6 @@ import Search from "./src/screens/SearchPage";
 import NewStory from "./src/screens/NewStoryPage";
 import StoryRooms from "./src/screens/StoryRoomsPage";
 import Profile from "./src/screens/ProfilePage";
-import StoryDetailsPage from "./src/screens/StoryDetailsPage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -54,7 +53,6 @@ function ChatStack() {
           <Stack.Screen name="Story Rooms" component={StoryRooms} />
           <Stack.Screen name="Profile" component={Profile} />
           <Stack.Screen name="Chats" component={Chat} />
-          <Stack.Screen name="StoryDetails" component={StoryDetailsPage} />
         </Stack.Navigator>
 
         <StatusBar style="auto" />
@@ -68,7 +66,25 @@ function AuthStack() {
     <GestureHandlerRootView>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Sugnup" component={Sugnup} />
+        <Stack.Screen name="Signup" component={Signup} />
+      </Stack.Navigator>
+    </GestureHandlerRootView>
+  );
+}
+
+function MainStack() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack.Navigator screenOptions={{ headerShown: true }}>
+        <Stack.Screen name="Landing" component={LandingPage} />
+        <Stack.Screen name="Home" component={LandingPage} />
+        <Stack.Screen name="Search" component={SearchPage} />
+        <Stack.Screen name="New Story" component={NewStoryPage} />
+        <Stack.Screen name="Story Rooms" component={StoryRoomsPage} />
+        <Stack.Screen name="Profile" component={ProfilePage} />
+        <Stack.Screen name="Chats" component={ChatsFlowStack} />
+        <Stack.Screen name="Chat List" component={ChatListScreen} />
+        <Stack.Screen name="ChatScreen" component={ChatScreen} />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
@@ -99,12 +115,13 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {user ? <ChatStack /> : <AuthStack />}
+      {user ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }
 
 export default function App() {
+  console.log("🔍 App is starting...");
   return (
     <AuthenticatedUserProvider>
       <RootNavigator />
