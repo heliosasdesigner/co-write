@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation, NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 type RootStackParamList = {
   Home: undefined;
@@ -15,12 +16,16 @@ type NavBarProps = {
   currentTab?: keyof RootStackParamList;
 };
 
-const tabConfig: Array<{ route: keyof RootStackParamList; label: string }> = [
-  { route: "Home", label: "Home" },
-  { route: "Search", label: "Search" },
-  { route: "New Story", label: "New Story" },
-  { route: "Story Rooms", label: "Story Rooms" },
-  { route: "Profile", label: "Profile" },
+const tabConfig: Array<{
+  route: keyof RootStackParamList;
+  label: string;
+  iconName: string;
+}> = [
+  { route: "Home", label: "Home", iconName: "home" },
+  { route: "Search", label: "Search", iconName: "search" },
+  { route: "New Story", label: "New Story", iconName: "create" },
+  { route: "Story Rooms", label: "Story Rooms", iconName: "book" },
+  { route: "Profile", label: "Profile", iconName: "person" },
 ];
 
 const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
@@ -38,7 +43,7 @@ const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
 
   return (
     <View style={styles.container}>
-      {tabConfig.map(({ route, label }) => {
+      {tabConfig.map(({ route, label, iconName }) => {
         const isFocused = route === currentTab;
 
         return (
@@ -47,7 +52,13 @@ const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
             style={styles.tab}
             onPress={() => navigation.navigate(route)}
           >
-            <View style={[styles.circle, isFocused && styles.activeCircle]} />
+            <View style={[styles.circle, isFocused && styles.activeCircle]}>
+              <MaterialIcons
+                name={iconName}
+                size={20}
+                color={isFocused ? "#4a5a75" : "#7a8a9a"}
+              />
+            </View>
             <Text style={styles.label}>{label}</Text>
           </TouchableOpacity>
         );
@@ -89,6 +100,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#d6dce5",
     marginBottom: 4,
+    alignItems: "center",
+    justifyContent: "center",
   },
   activeCircle: {
     backgroundColor: "#ffffff",
