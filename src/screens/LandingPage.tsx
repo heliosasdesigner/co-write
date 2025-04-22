@@ -5,6 +5,7 @@ import { db, auth } from "../../firebase/config.ts";
 import Header from "../components/Header";
 import StoryCard from "../components/StoryCard";
 import PageLayout from "../components/PageLayout";
+import { getAuth } from "firebase/auth";
 
 const LandingPage = () => {
   const [stories, setStories] = useState([]);
@@ -13,10 +14,20 @@ const LandingPage = () => {
     const fetchStories = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "stories"));
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        const data = querySnapshot.docs.map((doc) => {
+          const storyData = doc.data();
+
+          return {
+            id: doc.id,
+            userId: storyData.userId || "",
+            topic: storyData.topic,
+            video: storyData.video,
+            votes: storyData.votes,
+            createdAt: storyData.createdAt?.toDate
+              ? storyData.createdAt.toDate()
+              : storyData.createdAt,
+          };
+        });
         setStories(data);
       } catch (err) {
         console.error("Error fetching stories:", err);
@@ -26,7 +37,6 @@ const LandingPage = () => {
     fetchStories();
   }, []);
 
-
   return (
     <PageLayout currentTab="Home" scrollable>
       <Header />
@@ -34,9 +44,12 @@ const LandingPage = () => {
         {stories.map((story, idx) => (
           <StoryCard
             key={story.id}
+            id={story.id}
+            userId={story.userId}
             topic={story.topic}
             createdAt={story.createdAt}
             video={story.video}
+            votes={story.votes}
           />
         ))}
       </ScrollView>
@@ -47,13 +60,13 @@ const LandingPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e6f0fa',
+    backgroundColor: "#e6f0fa",
   },
 
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     columnGap: 3,
     rowGap: 3,
     paddingHorizontal: 12,
@@ -64,8 +77,8 @@ const styles = StyleSheet.create({
     height: 50,
     width: 50,
     borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     shadowOffset: {
       width: 0,
       height: 2,

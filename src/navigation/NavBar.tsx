@@ -1,15 +1,15 @@
-import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation, NavigationContext } from '@react-navigation/native';
+import React, { useContext } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation, NavigationContext } from "@react-navigation/native";
 
-const tabs = ['Home', 'Search', 'Chats', 'Story Rooms', 'Profile'];
+const tabs = ["Home", "Search", "Chats", "Story Rooms", "Profile"];
 
-const NavBar = ({ currentTab = 'Home' }) => {
+const NavBar = ({ currentTab = "Home" }) => {
   const navigationContext = useContext(NavigationContext);
 
   if (!navigationContext) {
     console.warn(
-      '[NavBar] No navigation context found. Skipping render or logic'
+      "[NavBar] No navigation context found. Skipping render or logic"
     );
     return null;
   }
@@ -54,27 +54,27 @@ const NavBar = ({ currentTab = 'Home' }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
+    flexDirection: "row",
+    justifyContent: "space-evenly",
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: '#4a5a75',
+    backgroundColor: "#4a5a75",
   },
   tab: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   circle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#d6dce5',
+    backgroundColor: "#d6dce5",
     marginBottom: 4,
   },
   activeCircle: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   label: {
-    color: 'white',
+    color: "white",
     fontSize: 10,
   },
 });
