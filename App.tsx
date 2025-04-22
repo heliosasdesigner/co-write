@@ -29,15 +29,19 @@ import {
   AuthenticatedUserProvider,
   AuthenticatedUserContext,
 } from "./src/contexts/AuthenticatedUser";
+import ChatListScreen from "./src/screens/Chat2List";
+import ChatsFlowStack from "./src/navigation/ChatsFlowStack";
 
 const Stack = createStackNavigator();
 
+import ChatScreen from "./src/screens/Chat2";
+import Signup from "./src/screens/Signup";
 function AuthStack() {
   return (
     <GestureHandlerRootView>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Sugnup" component={Sugnup} />
+        <Stack.Screen name="Signup" component={Signup} />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
@@ -46,13 +50,16 @@ function AuthStack() {
 function MainStack() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: true }}>
         <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Home" component={LandingPage} />
         <Stack.Screen name="Search" component={SearchPage} />
         <Stack.Screen name="New Story" component={NewStoryPage} />
         <Stack.Screen name="Story Rooms" component={StoryRoomsPage} />
         <Stack.Screen name="Profile" component={ProfilePage} />
+        <Stack.Screen name="Chats" component={ChatsFlowStack} />
+        <Stack.Screen name="Chat List" component={ChatListScreen} />
+        <Stack.Screen name="ChatScreen" component={ChatScreen} />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
