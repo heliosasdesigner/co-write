@@ -15,27 +15,52 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import LandingPage from "./src/screens/LandingPage";
+import Chat from "./src/screens/Chats";
 import Login from "./src/screens/Login";
 import Sugnup from "./src/screens/Sugnup";
-import NavBar from "./src/navigation/NavBar";
-import SearchPage from "./src/screens/SearchPage";
-import NewStoryPage from "./src/screens/NewStoryPage";
-import StoryRoomsPage from "./src/screens/StoryRoomsPage";
-import ProfilePage from "./src/screens/ProfilePage";
+import Search from "./src/screens/SearchPage";
+import NewStory from "./src/screens/NewStoryPage";
+import StoryRooms from "./src/screens/StoryRoomsPage";
+import Profile from "./src/screens/ProfilePage";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import {
-  AuthenticatedUserProvider,
-  AuthenticatedUserContext,
-} from "./src/contexts/AuthenticatedUser";
-import ChatListScreen from "./src/screens/Chat2List";
-import ChatsFlowStack from "./src/navigation/ChatsFlowStack";
-
 const Stack = createStackNavigator();
+const AuthenticatedUserContext = createContext({});
 
-import ChatScreen from "./src/screens/Chat2";
-import Signup from "./src/screens/Signup";
+const AuthenticatedUserProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  return (
+    <AuthenticatedUserContext.Provider value={{ user, setUser }}>
+      {children}
+    </AuthenticatedUserContext.Provider>
+  );
+};
+
+function ChatStack() {
+  return (
+    <GestureHandlerRootView>
+      <SafeAreaProvider>
+        <View style={styles.header}>
+          <Text style={styles.title}>Hello! this is co-write</Text>
+          <Text style={styles.subtitle}>This is a subtitle</Text>
+        </View>
+
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={LandingPage} />
+          <Stack.Screen name="Search" component={Search} />
+          <Stack.Screen name="New Story" component={NewStory} />
+          <Stack.Screen name="Story Rooms" component={StoryRooms} />
+          <Stack.Screen name="Profile" component={Profile} />
+          <Stack.Screen name="Chats" component={Chat} />
+        </Stack.Navigator>
+
+        <StatusBar style="auto" />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
 function AuthStack() {
   return (
     <GestureHandlerRootView>
