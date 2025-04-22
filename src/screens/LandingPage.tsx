@@ -1,13 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, View, Text } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
-import { db, auth } from "../../firebase/config.ts";
+import { db, auth } from "../../firebase/config";
 import Header from "../components/Header";
 import StoryCard from "../components/StoryCard";
 import PageLayout from "../components/PageLayout";
+import { landingStyles } from "../styles";
+
+interface Story {
+  id: string;
+  topic: string;
+  createdAt: Date;
+  video?: string;
+  [key: string]: any;
+}
 
 const LandingPage = () => {
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState<Story[]>([]);
 
   useEffect(() => {
     const fetchStories = async () => {
@@ -16,10 +25,10 @@ const LandingPage = () => {
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as Story[];
         setStories(data);
-      } catch (err) {
-        console.error("Error fetching stories:", err);
+      } catch (error: unknown) {
+        console.error("Error fetching stories:", error);
       }
     };
 
@@ -29,62 +38,25 @@ const LandingPage = () => {
   return (
     <PageLayout currentTab="Home" scrollable>
       <Header />
-      <ScrollView contentContainerStyle={styles.grid}>
-        {stories.map((story, idx) => (
-          <StoryCard
-            key={story.id}
-            topic={story.topic}
-            createdAt={story.createdAt}
-            video={story.video}
-          />
-        ))}
+      <ScrollView contentContainerStyle={landingStyles.grid}>
+        {stories.length === 0 ? (
+          <View style={landingStyles.emptyState}>
+            <Text style={landingStyles.emptyStateText}>No stories found</Text>
+          </View>
+        ) : (
+          stories.map((story) => (
+            <View key={story.id} style={landingStyles.cardWrapper}>
+              <StoryCard
+                topic={story.topic}
+                createdAt={story.createdAt}
+                video={story.video}
+              />
+            </View>
+          ))
+        )}
       </ScrollView>
     </PageLayout>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#e6f0fa",
-  },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    columnGap: 3,
-    rowGap: 3,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 80,
-  },
-  newStoryButton: {
-    margin: 12,
-    padding: 12,
-    backgroundColor: "#4287f5",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  newStoryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  chatButton: {
-    height: 50,
-    width: 50,
-    borderRadius: 25,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    marginRight: 20,
-    marginBottom: 50,
-  },
-});
 
 export default LandingPage;

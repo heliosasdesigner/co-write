@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  StyleSheet,
   Text,
   View,
   TextInput,
@@ -8,144 +7,103 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
-  Button,
   ActivityIndicator,
-} from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../../firebase/config';
-import { doc, setDoc } from 'firebase/firestore';
+} from "react-native";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../firebase/config";
+import { doc, setDoc } from "firebase/firestore";
+import { authStyles, loginButtonStyles } from "../styles";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../types/navigation";
 
-const backImage = require('../../assets/backImage.png');
+const backImage = require("../../assets/backImage.png");
 
-export default function Signup({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+type Props = NativeStackScreenProps<RootStackParamList, "Signup">;
+
+export default function Signup({ navigation }: Props) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onHandleSignup = async () => {
     if (!email || !password) {
-      return Alert.alert('Missing Fields', 'Please enter email and password.');
+      return Alert.alert("Missing Fields", "Please enter email and password.");
     }
 
     try {
       setLoading(true);
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
-
-      await setDoc(doc(db, 'users', user.uid), {
+      await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         createdAt: new Date(),
       });
 
-      console.log('Signup success');
-    } catch (err) {
-      console.error('Signup error:', err);
-      Alert.alert('Signup Error', err.message);
+      console.log("Signup success");
+    } catch (error: unknown) {
+      console.error("Signup error:", error);
+      Alert.alert(
+        "Signup Error",
+        error instanceof Error ? error.message : "An error occurred"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-      <View>
-        <Image source={backImage} style={styles.backImage} />
-        <View style={styles.whiteSheet} />
-        <SafeAreaView style={styles.form}>
-          <Text style={styles.title}>Sign Up</Text>
+    <View style={authStyles.container}>
+      <Image source={backImage} style={authStyles.backImage} />
+      <View style={authStyles.whiteSheet} />
+      <SafeAreaView style={authStyles.form}>
+        <Text style={authStyles.title}>Sign Up</Text>
 
-          <TextInput
-              style={styles.input}
-              placeholder="Enter email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
+        <TextInput
+          style={authStyles.input}
+          placeholder="Enter email"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={authStyles.input}
+          placeholder="Enter password"
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#007AFF"
+            style={{ marginTop: 20 }}
           />
-          <TextInput
-              style={styles.input}
-              placeholder="Enter password"
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={password}
-              onChangeText={setPassword}
-          />
+        ) : (
+          <TouchableOpacity
+            style={loginButtonStyles.button}
+            onPress={onHandleSignup}
+          >
+            <Text style={loginButtonStyles.buttonText}>Sign Up</Text>
+          </TouchableOpacity>
+        )}
 
-          {loading ? (
-              <ActivityIndicator size="large" color="#f57c00" style={{ marginTop: 20 }} />
-          ) : (
-              <View style={styles.buttonContainer}>
-                <Button title="Sign Up" onPress={onHandleSignup} color="#f57c00" />
-              </View>
-          )}
-
-          <View style={styles.switch}>
-            <Text style={styles.switchText}>Have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.switchLink}> Login</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </View>
+        <View style={authStyles.linkContainer}>
+          <Text style={authStyles.linkText}>Have an account?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <Text style={authStyles.linkButtonText}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: 'orange',
-    alignSelf: 'center',
-    paddingBottom: 24,
-  },
-  input: {
-    backgroundColor: '#F6F7FB',
-    height: 58,
-    marginBottom: 20,
-    fontSize: 16,
-    borderRadius: 10,
-    padding: 12,
-  },
-  backImage: {
-    width: '100%',
-    height: 340,
-    position: 'absolute',
-    top: 0,
-    resizeMode: 'cover',
-  },
-  whiteSheet: {
-    width: '100%',
-    height: '75%',
-    position: 'absolute',
-    bottom: 0,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 60,
-  },
-  form: {
-    justifyContent: 'center',
-    marginHorizontal: 30,
-  },
-  buttonContainer: {
-    marginTop: 40,
-    borderRadius: 10,
-    overflow: 'hidden',
-  },
-  switch: {
-    marginTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'center',
-  },
-  switchText: {
-    color: 'gray',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  switchLink: {
-    color: '#f57c00',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-});

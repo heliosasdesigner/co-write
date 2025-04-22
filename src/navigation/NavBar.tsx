@@ -1,8 +1,9 @@
 import React, { useContext } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useNavigation, NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { navigationStyles } from "../styles";
 
 type RootStackParamList = {
   Home: undefined;
@@ -42,24 +43,35 @@ const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
-    <View style={styles.container}>
+    <View style={navigationStyles.container}>
       {tabConfig.map(({ route, label, iconName }) => {
         const isFocused = route === currentTab;
 
         return (
           <TouchableOpacity
             key={route}
-            style={styles.tab}
+            style={navigationStyles.tabButton}
             onPress={() => navigation.navigate(route)}
           >
-            <View style={[styles.circle, isFocused && styles.activeCircle]}>
-              <MaterialIcons
-                name={iconName}
-                size={20}
-                color={isFocused ? "#4a5a75" : "#7a8a9a"}
-              />
-            </View>
-            <Text style={styles.label}>{label}</Text>
+            <MaterialIcons
+              name={iconName}
+              size={20}
+              color={
+                isFocused
+                  ? navigationStyles.activeTab.color
+                  : navigationStyles.inactiveTab.color
+              }
+            />
+            <Text
+              style={[
+                navigationStyles.tabText,
+                isFocused
+                  ? navigationStyles.activeTab
+                  : navigationStyles.inactiveTab,
+              ]}
+            >
+              {label}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -83,32 +95,4 @@ const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
 //   </View>
 // );
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: "#4a5a75",
-  },
-  tab: {
-    alignItems: "center",
-  },
-  circle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#d6dce5",
-    marginBottom: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activeCircle: {
-    backgroundColor: "#ffffff",
-  },
-  label: {
-    color: "white",
-    fontSize: 10,
-  },
-});
 export default NavBar;

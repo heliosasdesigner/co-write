@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, FlatList } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
+import { storyRoomsStyles, authStyles } from "../styles";
+
+interface Story {
+  id: string;
+  title: string;
+  createdAt: Date;
+  [key: string]: any;
+}
 
 const ProfilePage = () => {
   const [filter, setFilter] = useState("date");
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState<Story[]>([]);
   const user = auth.currentUser;
 
   useEffect(() => {
@@ -15,15 +23,18 @@ const ProfilePage = () => {
       try {
         if (!user) return;
 
-        const q = query(collection(db, "stories"), where("userId", "==", user.uid));
+        const q = query(
+          collection(db, "stories"),
+          where("userId", "==", user.uid)
+        );
         const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as Story[];
         setStories(data);
-      } catch (err) {
-        console.error("Error fetching stories:", err);
+      } catch (error: unknown) {
+        console.error("Error fetching stories:", error);
       }
     };
 
@@ -39,86 +50,60 @@ const ProfilePage = () => {
   });
 
   return (
-      <PageLayout currentTab="Profile">
-        {/* Avatar & Username */}
-        <Text style={styles.avatar}>👤</Text>
-        <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
-        <Text style={styles.bio}>Short Bio (optional)</Text>
+    <PageLayout currentTab="Profile">
+      <View style={storyRoomsStyles.header}>
+        <Text style={storyRoomsStyles.headerTitle}>Profile</Text>
+      </View>
 
-        {/* Filter Section */}
-        <View style={styles.filterRow}>
-          <Text style={styles.filterLabel}>Filter:</Text>
+      <View style={storyRoomsStyles.roomItem}>
+        <Text style={authStyles.title}>👤</Text>
+        <Text style={storyRoomsStyles.roomTitle}>
+          {user?.email || "Username Placeholder"}
+        </Text>
+        <Text style={storyRoomsStyles.roomDescription}>
+          Short Bio (optional)
+        </Text>
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginVertical: 10,
+          }}
+        >
+          <Text style={storyRoomsStyles.roomTitle}>Filter:</Text>
           <Picker
-              selectedValue={filter}
-              style={styles.picker}
-              onValueChange={(itemValue) => setFilter(itemValue)}
+            selectedValue={filter}
+            style={{ flex: 1, height: 40 }}
+            onValueChange={(itemValue) => setFilter(itemValue)}
           >
             <Picker.Item label="Date Made" value="date" />
             <Picker.Item label="A - Z" value="az" />
           </Picker>
         </View>
 
-        {/* Past Stories */}
-        <Text style={styles.sectionTitle}>PAST STORIES</Text>
+        <Text style={storyRoomsStyles.roomTitle}>PAST STORIES</Text>
         <FlatList
-            data={sortedStories}
-            keyExtractor={(item, index) => `${item.id}-${index}`}
-            renderItem={({ item, index }) => (
-                <Text style={styles.storyItem}>
-                  {index + 1}. {item.title}
-                </Text>
-            )}
-            ListEmptyComponent={
-              <Text style={{ textAlign: "center", color: "#999", marginTop: 20 }}>
+          data={sortedStories}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => (
+            <View style={storyRoomsStyles.roomItem}>
+              <Text style={storyRoomsStyles.roomTitle}>
+                {index + 1}. {item.title}
+              </Text>
+            </View>
+          )}
+          ListEmptyComponent={
+            <View style={storyRoomsStyles.emptyState}>
+              <Text style={storyRoomsStyles.emptyStateText}>
                 No stories found.
               </Text>
-            }
+            </View>
+          }
         />
-      </PageLayout>
+      </View>
+    </PageLayout>
   );
 };
-
-const styles = StyleSheet.create({
-  avatar: {
-    fontSize: 50,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  username: {
-    fontSize: 18,
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  bio: {
-    textAlign: "center",
-    fontStyle: "italic",
-    color: "#888",
-    marginBottom: 20,
-  },
-  filterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  filterLabel: {
-    marginRight: 10,
-  },
-  picker: {
-    flex: 1,
-    height: 40,
-  },
-  sectionTitle: {
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  storyItem: {
-    padding: 10,
-    backgroundColor: "#fff",
-    marginBottom: 6,
-    borderRadius: 6,
-    borderColor: "#ddd",
-    borderWidth: 1,
-  },
-});
 
 export default ProfilePage;
