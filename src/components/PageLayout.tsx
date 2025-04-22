@@ -22,7 +22,6 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   scrollable = false,
 }) => {
   const ContentWrapper = scrollable ? ScrollView : View;
-
   return (
     <View style={styles.container}>
       <ContentWrapper
@@ -35,7 +34,6 @@ const PageLayout: React.FC<PageLayoutProps> = ({
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -50,5 +48,4 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
 });
-
 export default PageLayout;
