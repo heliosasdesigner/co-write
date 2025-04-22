@@ -1,27 +1,74 @@
-import React from "react";
-import { Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
 import PageLayout from "../components/PageLayout";
 import OpenRouter from "../components/OpenRouter";
 
-const mockRooms = [
-  { id: "1", title: "story 1" },
-  { id: "2", title: "story 2" },
-  { id: "3", title: "story 3" },
-];
+import ExampleImageGeneration from "../components/ExampleImageGeneration";
+import ExampleResponseStream from "../components/ExampleResponseStream";
+import { getUserStories, Story } from "../../api/stories";
+import { getUsersByUsername } from "../../api/users";
+import { auth } from "../../firebase/config";
+import { AuthenticatedUserContext } from "../contexts/AuthenticatedUser";
+import { ChatsFlowParamList } from "../navigation/ChatsFlowStack";
+
+type StoryRoomsNavigationProp = StackNavigationProp<ChatsFlowParamList>;
 
 const StoryRoomsPage = () => {
+  const { user } = useContext(AuthenticatedUserContext);
+  const [stories, setStories] = useState<Story[]>([]);
+  const navigation = useNavigation<StoryRoomsNavigationProp>();
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      if (auth.currentUser?.email) {
+        const fetchedStories = await getUserStories(auth.currentUser.email);
+        setStories(fetchedStories);
+      }
+    };
+    fetchStories();
+  }, []);
+
+  const handleStoryPress = (story: Story) => {
+    navigation.navigate("Chat", {
+      storyId: story.id,
+      title: story.title,
+      topic: story.topic,
+      aiAssistant: story.aiAssistant || false,
+      wordLimit: story.wordLimit || "100",
+      numberOfPages: story.pageLimit || "10",
+    });
+  };
+
   return (
     <PageLayout currentTab="Story Rooms">
-      <OpenRouter />
       <Text style={styles.title}>Story Rooms</Text>
+      {/* <OpenRouter />
       <ExampleImageGeneration />
-      <ExampleResponseStream />
+      <ExampleResponseStream /> */}
       <FlatList
-        data={mockRooms}
+        data={stories}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.room}>
-            <Text style={styles.roomText}>{item.title}</Text>
+          <TouchableOpacity
+            style={styles.room}
+            onPress={() => handleStoryPress(item)}
+          >
+            <View>
+              <Text style={styles.roomTitle}>{item.title}</Text>
+              <Text style={styles.roomTopic}>Topic: {item.topic}</Text>
+              <Text style={styles.roomDetails}>
+                {item.aiAssistant ? "AI Assisted" : "Human Only"} •{" "}
+                {item.joinUser?.length || 1} Participant(s)
+              </Text>
+            </View>
           </TouchableOpacity>
         )}
       />
@@ -47,8 +94,19 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-  roomText: {
-    fontSize: 16,
+  roomTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  roomTopic: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 4,
+  },
+  roomDetails: {
+    fontSize: 12,
+    color: "#888",
   },
 });
 
