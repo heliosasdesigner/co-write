@@ -70,8 +70,10 @@ const ChatListScreen = () => {
 
   const handleCreateChat = async (
     otherUserId: string,
+    aiAssistant: boolean,
     topic: string,
-    wordLimit: number
+    wordLimit: number,
+    numberOfPages: number
   ) => {
     if (!user) return;
 
@@ -82,8 +84,10 @@ const ChatListScreen = () => {
 
     await setDoc(chatRef, {
       participants,
+      aiAssistant,
       topic,
       wordLimit,
+      numberOfPages,
       lastMessage: "",
       lastMessageTimestamp: serverTimestamp(),
     });
