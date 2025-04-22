@@ -1,0 +1,105 @@
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Ionicons } from "@expo/vector-icons";
+
+// Components
+import NewStoryPage from "../screens/NewStoryPage";
+import Chat from "../screens/Chat";
+import StoryRoomsPage from "../screens/StoryRoomsPage";
+
+// Define the chat flow navigation parameter list
+export type ChatsFlowParamList = {
+  "Story Rooms": undefined;
+  Profile: undefined;
+  NewStory: undefined;
+  Chat: {
+    storyId: string;
+    topic?: string;
+    title?: string;
+    aiAssistant?: boolean;
+    wordLimit?: string;
+    numberOfPages?: string;
+  };
+};
+
+// Use ChatsFlowParamList as the root stack param list
+export type RootStackParamList = ChatsFlowParamList;
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+const Stack = createStackNavigator<ChatsFlowParamList>();
+
+const ChatsFlowStack: React.FC = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  return (
+    <View style={styles.container}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#ffffff",
+          },
+          headerTintColor: "#007AFF",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      >
+        <Stack.Screen
+          name="Story Rooms"
+          component={StoryRoomsPage}
+          options={{
+            headerTitle: "Story Rooms",
+          }}
+        />
+        <Stack.Screen
+          name="NewStory"
+          component={NewStoryPage}
+          options={{
+            headerTitle: "Create Story",
+            headerBackTitle: "Back",
+          }}
+        />
+        <Stack.Screen
+          name="Chat"
+          component={Chat}
+          options={{
+            headerTitle: "Story Chat",
+            headerLeft: () => (
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Story Rooms")}
+                style={styles.headerButton}
+              >
+                <Ionicons name="chevron-back" size={24} color="#007AFF" />
+                <Text style={styles.headerButtonText}>Story Rooms</Text>
+              </TouchableOpacity>
+            ),
+          }}
+        />
+      </Stack.Navigator>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+  headerButton: {
+    marginLeft: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerButtonText: {
+    color: "#007AFF",
+    fontSize: 16,
+    marginLeft: 4,
+  },
+});
+
+export default ChatsFlowStack;

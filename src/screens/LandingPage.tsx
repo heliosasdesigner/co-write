@@ -26,7 +26,6 @@ const LandingPage = () => {
     fetchStories();
   }, []);
 
-
   return (
     <PageLayout currentTab="Home" scrollable>
       <Header />
@@ -47,25 +46,36 @@ const LandingPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e6f0fa',
+    backgroundColor: "#e6f0fa",
   },
-
   grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     columnGap: 3,
     rowGap: 3,
     paddingHorizontal: 12,
     paddingTop: 8,
     paddingBottom: 80,
   },
+  newStoryButton: {
+    margin: 12,
+    padding: 12,
+    backgroundColor: "#4287f5",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  newStoryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   chatButton: {
     height: 50,
     width: 50,
     borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     shadowOffset: {
       width: 0,
       height: 2,

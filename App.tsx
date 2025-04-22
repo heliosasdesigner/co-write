@@ -1,72 +1,36 @@
-
-
 import {
   SafeAreaView,
   StyleSheet,
   Text,
   View,
   ActivityIndicator,
-} from 'react-native';
-import React, { createContext, useEffect, useState, useContext } from 'react';
+} from "react-native";
+import React, { createContext, useEffect, useState, useContext } from "react";
 
-import { onAuthStateChanged } from 'firebase/auth';
-import { StatusBar } from 'expo-status-bar';
-import { auth } from './firebase/config';
+import { onAuthStateChanged } from "firebase/auth";
+import { StatusBar } from "expo-status-bar";
+import { auth } from "./firebase/config";
 
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 
+import LandingPage from "./src/screens/LandingPage";
+import Login from "./src/screens/Login";
+import Sugnup from "./src/screens/Sugnup";
+import NavBar from "./src/navigation/NavBar";
+import SearchPage from "./src/screens/SearchPage";
+import NewStoryPage from "./src/screens/NewStoryPage";
+import StoryRoomsPage from "./src/screens/StoryRoomsPage";
+import ProfilePage from "./src/screens/ProfilePage";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import LandingPage from './src/screens/LandingPage';
-import Chat from './src/screens/Chats';
-import Login from './src/screens/Login';
-import Sugnup from './src/screens/Signup';
-import Search from './src/screens/SearchPage';
-import NewStory from './src/screens/NewStoryPage';
-import StoryRooms from './src/screens/StoryRoomsPage';
-import Profile from './src/screens/ProfilePage';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  AuthenticatedUserProvider,
+  AuthenticatedUserContext,
+} from "./src/contexts/AuthenticatedUser";
 
 const Stack = createStackNavigator();
-const AuthenticatedUserContext = createContext({});
-
-const AuthenticatedUserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  return (
-    <AuthenticatedUserContext.Provider value={{ user, setUser }}>
-      {children}
-    </AuthenticatedUserContext.Provider>
-  );
-};
-
-function ChatStack() {
-  return (
-
-
-    <GestureHandlerRootView>
-      <SafeAreaProvider>
-        <View style={styles.header}>
-          <Text style={styles.title}>Hello! this is co-write</Text>
-          <Text style={styles.subtitle}>This is a subtitle</Text>
-        </View>
-
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Home" component={LandingPage} />
-          <Stack.Screen name="Search" component={Search} />
-          <Stack.Screen name="New Story" component={NewStory} />
-          <Stack.Screen name="Story Rooms" component={StoryRooms} />
-          <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="Chats" component={Chat} />
-        </Stack.Navigator>
-
-        <StatusBar style="auto" />
-
-
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
-  );
-}
 
 function AuthStack() {
   return (
@@ -74,6 +38,21 @@ function AuthStack() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Sugnup" component={Sugnup} />
+      </Stack.Navigator>
+    </GestureHandlerRootView>
+  );
+}
+
+function MainStack() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Landing" component={LandingPage} />
+        <Stack.Screen name="Home" component={LandingPage} />
+        <Stack.Screen name="Search" component={SearchPage} />
+        <Stack.Screen name="New Story" component={NewStoryPage} />
+        <Stack.Screen name="Story Rooms" component={StoryRoomsPage} />
+        <Stack.Screen name="Profile" component={ProfilePage} />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
@@ -96,7 +75,7 @@ function RootNavigator() {
   }, [user]);
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
@@ -104,12 +83,13 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {user ? <ChatStack /> : <AuthStack />}
+      {user ? <MainStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }
 
 export default function App() {
+  console.log("🔍 App is starting...");
   return (
     <AuthenticatedUserProvider>
       <RootNavigator />
@@ -123,20 +103,20 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
-    backgroundColor: '#f2f2f2',
-    alignItems: 'center',
+    backgroundColor: "#f2f2f2",
+    alignItems: "center",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   subtitle: {
     fontSize: 16,
-    fontWeight: 'normal',
+    fontWeight: "normal",
   },
   video: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
 });
