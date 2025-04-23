@@ -28,6 +28,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { chatWithLLM } from "../../LLMs/config";
 import { generateImage } from "../../LLMs/imageGenerator";
+import { useImageRequest } from "../hooks/useImageRequest";
+import { uploadSectionImages } from "../../api/stories";
 
 type RootStackParamList = {
   ChatScreen: { chatId: string; aiAssistant?: boolean };
@@ -42,12 +44,9 @@ type Message = {
   timestamp: any;
 };
 
-const PLACEHOLDER_IMAGE =
-  "https://via.placeholder.com/1024?text=Image+Unavailable";
-
 const ChatScreen = () => {
   const { chatId, aiAssistant = true } = useRoute<ChatScreenRouteProp>().params;
-
+  const { imageUrl, isLoading, error, setImagePrompt } = useImageRequest();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [wordLimit, setWordLimit] = useState<number | null>(null);
@@ -58,6 +57,8 @@ const ChatScreen = () => {
   const [loadingHint, setLoadingHint] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [imageGenerating, setImageGenerating] = useState(false);
+  const [storySubmit, setStorySubmit] = useState(false);
+  const [storySummary, setStorySummary] = useState("");
   const flatListRef = useRef<FlatList>(null);
   const user = auth.currentUser;
 
@@ -87,6 +88,21 @@ const ChatScreen = () => {
     return () => unsub();
   }, [chatId]);
 
+  useEffect(() => {
+    if (!imageUrl) return;
+
+    console.log("handleImageUpload hit!!!");
+    console.log(imageUrl);
+
+    uploadSectionImages(imageUrl, chatId)
+      .then((url) => {
+        console.log("Image was uploaded successfully: ", url);
+      })
+      .catch((error) => {
+        console.error("Error uploading image:", error);
+      });
+  }, [imageUrl]);
+
   const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
   const overLimit = wordLimit != null && wordCount > wordLimit;
   const textPages = messages.filter((m) => !!m.text).length;
@@ -101,7 +117,7 @@ const ChatScreen = () => {
     }
     setLoadingHint(true);
     try {
-      const promptHint = `I'm writing a story but I'm stuck for ideas. Here's my current draft:\n\n${composerText}`;
+      const promptHint = `I'm writing a story but I'm stuck for ideas. Here's my current draft:\n\n${composerText}, in no more than 20 words.`;
       const ai = await chatWithLLM([{ role: "user", content: promptHint }]);
       setHintText(ai);
       setShowHint(true);
@@ -112,59 +128,66 @@ const ChatScreen = () => {
     }
   };
 
-  const handleGenerate = async () => {
-    if (!aiAssistant) return;
+  const handleSubmitStory = async () => {
+    // Check if story is not complete yet
+    if (!aiAssistant || !numberOfPages || textPages + 1 < numberOfPages) {
+      Alert.alert(
+        "Story not complete",
+        "Please complete all pages before submitting."
+      );
+      return;
+    }
+
     setGenerating(true);
     try {
       const history = messages
-        .filter((m) => !!m.text)
+        .filter((m) => !!m.text && m.senderId !== "AI-summary")
         .map((m) => ({
           role: m.senderId === user?.uid ? "user" : "assistant",
           content: m.text!,
         }));
 
       const payload = [
-        { role: "system", content: "You are a helpful story assistant." },
-        ...history,
         {
-          role: "user",
-          content: `Continue as page ${
-            textPages + 1
-          } of ${numberOfPages}, in no more than ${wordLimit} words.`,
+          role: "system",
+          content:
+            "You are the best storyteller in the world. Summarize the story based on the conversation history within 200 words.",
         },
+        ...history,
       ];
 
       const aiText = await chatWithLLM(payload);
 
+      // Update story summary state
+      setStorySummary(aiText.trim());
+      // Mark story as submitted
+      setStorySubmit(true);
+
       await addDoc(collection(db, "chats", chatId, "messages"), {
         text: aiText.trim(),
-        senderId: "AI",
+        senderId: "AI-summary",
         timestamp: serverTimestamp(),
       });
       flatListRef.current?.scrollToEnd({ animated: true });
 
-      if (numberOfPages != null && textPages + 1 >= numberOfPages) {
-        setImageGenerating(true);
-        let imageUrl = PLACEHOLDER_IMAGE;
-        try {
-          const storyText = [
-            ...history.map((h) => `${h.role}: ${h.content}`),
-            `AI: ${aiText.trim()}`,
-          ].join("\n\n");
-          imageUrl = await generateImage(storyText);
-        } catch (imgErr: any) {
-          console.warn("Image generation failed:", imgErr);
-        }
+      // Generate image for the completed story
+      setImageGenerating(true);
+      try {
+        const storyText = [
+          ...history.map((h) => `${h.role}: ${h.content}`),
+          `AI: ${aiText.trim()}`,
+        ].join("\n\n");
 
-        await addDoc(collection(db, "chats", chatId, "messages"), {
-          imageUrl,
-          senderId: "AI",
-          timestamp: serverTimestamp(),
-        });
-        flatListRef.current?.scrollToEnd({ animated: true });
+        console.log("storyText", storyText);
+        setImagePrompt(storyText);
+      } catch (imgErr: any) {
+        console.warn("Image generation failed:", imgErr);
       }
     } catch (e: any) {
       Alert.alert("AI Generate Error", e.message);
+      // Reset states in case of error
+      setStorySubmit(false);
+      setStorySummary("");
     } finally {
       setGenerating(false);
       setImageGenerating(false);
@@ -173,6 +196,8 @@ const ChatScreen = () => {
 
   const handleSend = async () => {
     if (!input.trim() || !user || overLimit || overPageLimit) return;
+
+    // Send user's message
     await addDoc(collection(db, "chats", chatId, "messages"), {
       text: input.trim(),
       senderId: user.uid,
@@ -184,6 +209,66 @@ const ChatScreen = () => {
     });
     setInput("");
     flatListRef.current?.scrollToEnd({ animated: true });
+
+    // Generate AI response
+    if (aiAssistant) {
+      setGenerating(true);
+      try {
+        const history = messages
+          .filter((m) => !!m.text)
+          .map((m) => ({
+            role: m.senderId === user?.uid ? "user" : "assistant",
+            content: m.text!,
+          }));
+
+        const payload = [
+          {
+            role: "system",
+            content:
+              "You are the best storyteller in the world. Continue writing a story based on the user's input within 20 words.",
+          },
+          ...history,
+          { role: "user", content: input.trim() },
+        ];
+
+        const aiText = await chatWithLLM(payload);
+
+        // Store AI response in database
+        await addDoc(collection(db, "chats", chatId, "messages"), {
+          text: aiText.trim(),
+          senderId: "AI",
+          timestamp: serverTimestamp(),
+        });
+        flatListRef.current?.scrollToEnd({ animated: true });
+
+        // Generate image if it's the last page
+        if (numberOfPages != null && textPages + 1 >= numberOfPages) {
+          setImageGenerating(true);
+          try {
+            const storyText = [
+              ...history.map((h) => `${h.role}: ${h.content}`),
+              `AI: ${aiText.trim()}`,
+            ].join("\n\n");
+            const generatedUrl = await generateImage(storyText);
+            if (generatedUrl) {
+              await addDoc(collection(db, "chats", chatId, "messages"), {
+                imageUrl: generatedUrl,
+                senderId: "AI",
+                timestamp: serverTimestamp(),
+              });
+              flatListRef.current?.scrollToEnd({ animated: true });
+            }
+          } catch (imgErr: any) {
+            console.warn("Image generation failed:", imgErr);
+          }
+        }
+      } catch (e: any) {
+        Alert.alert("AI Response Error", e.message);
+      } finally {
+        setGenerating(false);
+        setImageGenerating(false);
+      }
+    }
   };
 
   return (
@@ -191,35 +276,32 @@ const ChatScreen = () => {
       {aiAssistant && (
         <>
           <View style={styles.hintButtonContainer}>
-            {loadingHint ? (
-              <ActivityIndicator size="small" />
-            ) : (
-              <Button
-                title={showHint ? "Hide AI Hint" : "Get AI Hint"}
-                onPress={() => (showHint ? setShowHint(false) : handleHint())}
-              />
-            )}
-          </View>
-          <View style={styles.hintButtonContainer}>
             <Button
-              title={generating ? "Generating..." : "Continue with AI"}
-              onPress={handleGenerate}
-              disabled={generating || imageGenerating}
+              title={generating ? "Generating..." : "Submit the story"}
+              onPress={handleSubmitStory}
+              disabled={
+                generating ||
+                imageGenerating ||
+                isLoading ||
+                !numberOfPages ||
+                textPages + 1 < numberOfPages
+              }
             />
           </View>
-          {imageGenerating && (
+          {(imageGenerating || isLoading) && (
             <View style={styles.hintButtonContainer}>
               <ActivityIndicator size="small" />
               <Text style={{ textAlign: "center" }}>Generating image…</Text>
             </View>
           )}
+          {error && (
+            <View style={styles.hintButtonContainer}>
+              <Text style={{ color: "red", textAlign: "center" }}>
+                Error generating image: {error.toString()}
+              </Text>
+            </View>
+          )}
         </>
-      )}
-
-      {showHint && (
-        <View style={styles.hintBox}>
-          <Text style={styles.hintText}>{hintText}</Text>
-        </View>
       )}
 
       <KeyboardAvoidingView
@@ -228,7 +310,7 @@ const ChatScreen = () => {
         keyboardVerticalOffset={80}
       >
         <FlatList
-          data={messages}
+          data={messages.filter((msg) => msg.senderId !== "AI-summary")}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View
@@ -276,6 +358,25 @@ const ChatScreen = () => {
           >
             {textPages}/{numberOfPages} pages
           </Text>
+        )}
+
+        {showHint && (
+          <View style={styles.hintBox}>
+            <Text style={styles.hintText}>{hintText}</Text>
+          </View>
+        )}
+
+        {aiAssistant && (
+          <View style={styles.hintButtonContainer}>
+            {loadingHint ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Button
+                title={showHint ? "Hide AI Hint" : "Get AI Hint"}
+                onPress={() => (showHint ? setShowHint(false) : handleHint())}
+              />
+            )}
+          </View>
         )}
 
         <View style={styles.inputContainer}>

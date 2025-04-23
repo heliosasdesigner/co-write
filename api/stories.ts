@@ -68,10 +68,10 @@ export const createStory = async (storyData: NewStory) => {
 
 export const uploadSectionImages = async (
   imageSourceUrl: string,
-  storyId: string
+  chatId: string
 ): Promise<string> => {
   console.log("imageSourceUrl", imageSourceUrl);
-  console.log("storyId", storyId);
+  console.log("chatId", chatId);
 
   const response = await fetch(imageSourceUrl);
   console.log("response", response);
@@ -90,7 +90,7 @@ export const uploadSectionImages = async (
   );
 
   // now upload to Storage
-  const filePath = `stories/${storyId}/sectionImages/${Date.now()}`;
+  const filePath = `chats/${chatId}/sectionImages/${Date.now()}`;
   const storageRef = ref(storage, filePath);
 
   console.log("⏳ Uploading to Storage at:", filePath);
@@ -101,8 +101,8 @@ export const uploadSectionImages = async (
   console.log("✅ Uploaded to Storage, URL:", url);
 
   // 4️⃣ Link it into Firestore
-  const storyDoc = doc(db, "stories", storyId);
-  await updateDoc(storyDoc, {
+  const chatDoc = doc(db, "chats", chatId);
+  await updateDoc(chatDoc, {
     sectionImages: arrayUnion(url),
   });
   console.log("✅ Added URL to Firestore document");
