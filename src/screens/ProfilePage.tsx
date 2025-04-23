@@ -44,7 +44,7 @@ const ProfilePage = () => {
         <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
         <Text style={styles.bio}>Short Bio (optional)</Text>
 
-        <View style={[styles.filterRow, { zIndex: 999, elevation: 999 }]}>
+        <View style={styles.filterRowWrapper}>
           <Text style={styles.filterLabel}>Filter:</Text>
           <View style={styles.pickerContainer}>
             <Picker
@@ -92,11 +92,14 @@ const styles = StyleSheet.create({
     color: "#888",
     marginBottom: 20,
   },
-  filterRow: {
+  filterRowWrapper: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
     paddingHorizontal: 10,
+    zIndex: 999,
+    elevation: 999,
+    position: "relative",
   },
   filterLabel: {
     marginRight: 10,
@@ -132,4 +135,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePage;
-
