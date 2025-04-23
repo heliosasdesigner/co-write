@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
 
-
 import { Picker } from "@react-native-picker/picker";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase/config";
@@ -47,44 +46,54 @@ const ProfilePage = () => {
     if (filter === "az") {
       return (a.title || "").localeCompare(b.title || "");
     } else {
-      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      return (
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime()
+      );
     }
   });
 
   return (
-      <PageLayout currentTab="Profile" scrollable={true}>
-        <Text style={styles.avatar}>👤</Text>
-        <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
-        <Text style={styles.bio}>Short Bio (optional)</Text>
-
-        <View style={styles.pickerWrapper}>
-          <Text style={styles.filterLabel}>Filter:</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-                selectedValue={filter}
-                onValueChange={(itemValue) => setFilter(itemValue)}
-                dropdownIconColor="#000"
-                mode={Platform.OS === "ios" ? "dropdown" : "dialog"} // helpful for iOS
-            >
-              <Picker.Item label="Date Made" value="date" />
-              <Picker.Item label="A - Z" value="az" />
-            </Picker>
-          </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>PAST STORIES</Text>
+    <PageLayout currentTab="Profile" scrollable={false}>
+      <View style={styles.container}>
         <FlatList
-            data={sortedStories}
-            keyExtractor={(item, index) => `${item.id}-${index}`}
-            renderItem={({ item, index }) => (
-                <Text style={styles.storyItem}>
-                  {index + 1}. {item.title || "Untitled Story"}
-                </Text>
-            )}
-            ListEmptyComponent={
-              <Text style={styles.emptyText}>No stories found.</Text>
-            }
+          data={sortedStories}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          ListHeaderComponent={() => (
+            <>
+              <Text style={styles.avatar}>👤</Text>
+              <Text style={styles.username}>
+                {user?.email || "Username Placeholder"}
+              </Text>
+              <Text style={styles.bio}>Short Bio (optional)</Text>
 
+              <View style={styles.pickerWrapper}>
+                <Text style={styles.filterLabel}>Filter:</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={filter}
+                    onValueChange={(itemValue) => setFilter(itemValue)}
+                    dropdownIconColor="#000"
+                    mode={Platform.OS === "ios" ? "dropdown" : "dialog"} // helpful for iOS
+                  >
+                    <Picker.Item label="Date Made" value="date" />
+                    <Picker.Item label="A - Z" value="az" />
+                  </Picker>
+                </View>
+              </View>
+
+              <Text style={styles.sectionTitle}>PAST STORIES</Text>
+            </>
+          )}
+          renderItem={({ item, index }) => (
+            <Text style={styles.storyItem}>
+              {index + 1}. {item.title || "Untitled Story"}
+            </Text>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No stories found.</Text>
+          }
+          contentContainerStyle={styles.listContainer}
         />
       </View>
     </PageLayout>
@@ -92,6 +101,12 @@ const ProfilePage = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  listContainer: {
+    paddingBottom: 20,
+  },
   avatar: {
     fontSize: 50,
     textAlign: "center",

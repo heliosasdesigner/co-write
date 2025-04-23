@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import {
   collection,
   query,
@@ -20,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
+import { chatListStyles } from "../styles";
 
 import NewChatModal from "./Chat2NewChat";
 
@@ -111,20 +106,22 @@ const ChatListScreen = () => {
 
   const renderItem = ({ item }: { item: Chat }) => (
     <TouchableOpacity
-      style={styles.chatItem}
+      style={chatListStyles.chatItem}
       onPress={() => navigation.navigate("ChatScreen", { chatId: item.id })}
     >
-      <Text style={styles.chatUser}>{item.otherUser}</Text>
-      {item.topic && <Text style={styles.topic}>Topic: {item.topic}</Text>}
-      <Text style={styles.lastMessage} numberOfLines={1}>
+      <Text style={chatListStyles.chatUser}>{item.otherUser}</Text>
+      {item.topic && (
+        <Text style={chatListStyles.topic}>Topic: {item.topic}</Text>
+      )}
+      <Text style={chatListStyles.lastMessage} numberOfLines={1}>
         {item.lastMessage || "Start the story..."}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-    <PageLayout currentTab="ChatList">
-      <View style={styles.container}>
+    <PageLayout currentTab="Story Rooms">
+      <View style={chatListStyles.container}>
         <FlatList
           data={chats}
           keyExtractor={(item) => item.id}
@@ -133,9 +130,9 @@ const ChatListScreen = () => {
 
         <TouchableOpacity
           onPress={() => setShowModal(true)}
-          style={styles.newChatButton}
+          style={chatListStyles.newChatButton}
         >
-          <Text style={styles.buttonText}>+ New Chat</Text>
+          <Text style={chatListStyles.buttonText}>+ New Chat</Text>
         </TouchableOpacity>
 
         <NewChatModal
@@ -149,38 +146,6 @@ const ChatListScreen = () => {
 };
 
 export default ChatListScreen;
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  chatItem: {
-    padding: 16,
-    backgroundColor: "#f6f6f6",
-    borderBottomColor: "#ddd",
-    borderBottomWidth: 1,
-  },
-  chatUser: {
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  topic: {
-    color: "#555",
-    fontStyle: "italic",
-  },
-  lastMessage: {
-    color: "#555",
-    marginTop: 4,
-  },
-  newChatButton: {
-    backgroundColor: "#007bff",
-    padding: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-});
 
 /*
     setup with navigator

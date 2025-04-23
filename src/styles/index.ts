@@ -158,13 +158,29 @@ export const exampleStyles = StyleSheet.create({
 
 // Chat Styles
 export const chatStyles = StyleSheet.create({
-  container: sharedStyles.container,
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   inputContainer: {
     flexDirection: "row",
     padding: 10,
     borderTopColor: "#ddd",
     borderTopWidth: 1,
     backgroundColor: "#f9f9f9",
+  },
+  hintButtonContainer: {
+    padding: 8,
+  },
+  hintBox: {
+    backgroundColor: "#f0f0f0",
+    marginHorizontal: 8,
+    marginBottom: 8,
+    padding: 10,
+    borderRadius: 6,
+  },
+  hintText: {
+    color: "#333",
   },
   input: {
     flex: 1,
@@ -173,11 +189,11 @@ export const chatStyles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#ccc",
-    height: 40,
+    maxHeight: 100,
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#007bff",
     borderRadius: 20,
     paddingHorizontal: 15,
     justifyContent: "center",
@@ -192,6 +208,7 @@ export const chatStyles = StyleSheet.create({
     padding: 10,
     maxWidth: "70%",
     borderRadius: 10,
+    alignItems: "flex-start",
   },
   myMessage: {
     backgroundColor: "#dcf8c6",
@@ -203,6 +220,204 @@ export const chatStyles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  completionContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  completionContent: {
+    padding: 20,
+  },
+  completionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
+    color: "#007bff",
+  },
+  summaryContainer: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: "#333",
+  },
+  summaryText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#444",
+  },
+  imageContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  imageTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: "#333",
+  },
+  completionImage: {
+    width: "100%",
+    height: 300,
+    borderRadius: 12,
+  },
+  loadingContainer: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 8,
+    color: "#666",
+    fontSize: 16,
+  },
+  errorContainer: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#ffebee",
+    borderRadius: 8,
+  },
+  errorText: {
+    color: "#d32f2f",
+    fontSize: 14,
+  },
+});
+
+export const chatListStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  chatItem: {
+    padding: 16,
+    backgroundColor: "#f6f6f6",
+    borderBottomColor: "#ddd",
+    borderBottomWidth: 1,
+  },
+  chatUser: {
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  topic: {
+    color: "#555",
+    fontStyle: "italic",
+  },
+  lastMessage: {
+    color: "#555",
+    marginTop: 4,
+  },
+  newChatButton: {
+    backgroundColor: "#007bff",
+    padding: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+});
+
+export const newChatModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "#00000099",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modal: {
+    width: "85%",
+    maxHeight: "80%",
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 8,
+    color: "#333",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+  },
+  picker: {
+    height: 50,
+    width: "100%",
+    backgroundColor: "transparent",
+  },
+  pickerItem: {
+    fontSize: 16,
+    height: 50,
+  },
+  infoContainer: {
+    backgroundColor: "#f8f9fa",
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  infoText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 4,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 20,
+  },
+  cancel: {
+    marginRight: 16,
+    padding: 12,
+  },
+  create: {
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  inputWithHelper: {
+    marginBottom: 16,
+  },
+  numberInput: {
+    marginBottom: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 4,
   },
 });
 

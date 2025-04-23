@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
   ActivityIndicator,
   Button,
   Image,
@@ -33,6 +32,7 @@ import { useImageRequest } from "../hooks/useImageRequest";
 import { uploadSectionImages, fetchSectionImages } from "../api/stories";
 import { useOpenAIStream } from "../hooks/useOpenAIStream";
 import OpenAI from "openai";
+import { chatStyles } from "../styles";
 
 type RootStackParamList = {
   ChatScreen: { chatId: string; aiAssistant?: boolean };
@@ -431,7 +431,7 @@ const ChatScreen = () => {
     <View style={{ flex: 1 }}>
       {aiAssistant && !storySubmit && (
         <>
-          <View style={styles.hintButtonContainer}>
+          <View style={chatStyles.hintButtonContainer}>
             <Button
               title={generating ? "Generating..." : "Submit the story"}
               onPress={handleSubmitStory}
@@ -446,13 +446,13 @@ const ChatScreen = () => {
             />
           </View>
           {(imageGenerating || isLoading) && (
-            <View style={styles.hintButtonContainer}>
+            <View style={chatStyles.hintButtonContainer}>
               <ActivityIndicator size="small" />
               <Text style={{ textAlign: "center" }}>Generating image…</Text>
             </View>
           )}
           {error && (
-            <View style={styles.hintButtonContainer}>
+            <View style={chatStyles.hintButtonContainer}>
               <Text style={{ color: "red", textAlign: "center" }}>
                 Error generating image: {error.toString()}
               </Text>
@@ -462,40 +462,36 @@ const ChatScreen = () => {
       )}
 
       {storySubmit ? (
-        // Story Completion View
-        <ScrollView style={styles.completionContainer}>
-          <View style={styles.completionContent}>
-            <Text style={styles.completionTitle}>Story Complete!</Text>
+        <ScrollView style={chatStyles.completionContainer}>
+          <View style={chatStyles.completionContent}>
+            <Text style={chatStyles.completionTitle}>Story Complete!</Text>
 
-            {/* Story Summary */}
-            <View style={styles.summaryContainer}>
-              <Text style={styles.summaryTitle}>Story Summary</Text>
-              <Text style={styles.summaryText}>{storySummary}</Text>
+            <View style={chatStyles.summaryContainer}>
+              <Text style={chatStyles.summaryTitle}>Story Summary</Text>
+              <Text style={chatStyles.summaryText}>{storySummary}</Text>
             </View>
 
-            {/* Story Image */}
             {imageUrl && (
-              <View style={styles.imageContainer}>
-                <Text style={styles.imageTitle}>Story Illustration</Text>
+              <View style={chatStyles.imageContainer}>
+                <Text style={chatStyles.imageTitle}>Story Illustration</Text>
                 <Image
                   source={{ uri: imageUrl }}
-                  style={styles.completionImage}
+                  style={chatStyles.completionImage}
                   resizeMode="contain"
                 />
               </View>
             )}
 
-            {/* Loading States */}
             {(imageGenerating || isLoading) && (
-              <View style={styles.loadingContainer}>
+              <View style={chatStyles.loadingContainer}>
                 <ActivityIndicator size="large" color="#007bff" />
-                <Text style={styles.loadingText}>Generating image...</Text>
+                <Text style={chatStyles.loadingText}>Generating image...</Text>
               </View>
             )}
 
             {error && (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>
+              <View style={chatStyles.errorContainer}>
+                <Text style={chatStyles.errorText}>
                   Error generating image: {error.toString()}
                 </Text>
               </View>
@@ -503,9 +499,8 @@ const ChatScreen = () => {
           </View>
         </ScrollView>
       ) : (
-        // Chat Interface
         <KeyboardAvoidingView
-          style={styles.container}
+          style={chatStyles.container}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={80}
         >
@@ -515,20 +510,20 @@ const ChatScreen = () => {
             renderItem={({ item }) => (
               <View
                 style={[
-                  styles.messageBubble,
+                  chatStyles.messageBubble,
                   item.senderId === user?.uid
-                    ? styles.myMessage
-                    : styles.theirMessage,
+                    ? chatStyles.myMessage
+                    : chatStyles.theirMessage,
                 ]}
               >
                 {item.imageUrl && (
                   <Image
                     source={{ uri: item.imageUrl }}
-                    style={styles.messageImage}
+                    style={chatStyles.messageImage}
                   />
                 )}
                 {item.text && (
-                  <Text style={styles.messageText}>{item.text}</Text>
+                  <Text style={chatStyles.messageText}>{item.text}</Text>
                 )}
               </View>
             )}
@@ -563,13 +558,13 @@ const ChatScreen = () => {
           )}
 
           {showHint && (
-            <View style={styles.hintBox}>
-              <Text style={styles.hintText}>{hintText}</Text>
+            <View style={chatStyles.hintBox}>
+              <Text style={chatStyles.hintText}>{hintText}</Text>
             </View>
           )}
 
           {aiAssistant && !storySubmit && (
-            <View style={styles.hintButtonContainer}>
+            <View style={chatStyles.hintButtonContainer}>
               {loadingHint ? (
                 <ActivityIndicator size="small" />
               ) : (
@@ -581,7 +576,7 @@ const ChatScreen = () => {
             </View>
           )}
 
-          <View style={styles.inputContainer}>
+          <View style={chatStyles.inputContainer}>
             <TextInput
               placeholder="Write your turn..."
               value={input}
@@ -589,7 +584,7 @@ const ChatScreen = () => {
                 setInput(t);
                 setComposerText(t);
               }}
-              style={styles.input}
+              style={chatStyles.input}
               multiline
               editable={!storySubmit}
             />
@@ -597,13 +592,13 @@ const ChatScreen = () => {
               onPress={handleSend}
               disabled={overLimit || overPageLimit || storySubmit}
               style={[
-                styles.sendButton,
+                chatStyles.sendButton,
                 (overLimit || overPageLimit || storySubmit) && {
                   backgroundColor: "#ccc",
                 },
               ]}
             >
-              <Text style={styles.sendText}>Send</Text>
+              <Text style={chatStyles.sendText}>Send</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -613,137 +608,3 @@ const ChatScreen = () => {
 };
 
 export default ChatScreen;
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  inputContainer: {
-    flexDirection: "row",
-    padding: 10,
-    borderTopColor: "#ddd",
-    borderTopWidth: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  hintButtonContainer: {
-    padding: 8,
-  },
-  hintBox: {
-    backgroundColor: "#f0f0f0",
-    marginHorizontal: 8,
-    marginBottom: 8,
-    padding: 10,
-    borderRadius: 6,
-  },
-  hintText: {
-    color: "#333",
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    maxHeight: 100,
-  },
-  sendButton: {
-    marginLeft: 10,
-    backgroundColor: "#007bff",
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    justifyContent: "center",
-  },
-  sendText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  messageBubble: {
-    marginHorizontal: 10,
-    marginVertical: 5,
-    padding: 10,
-    maxWidth: "70%",
-    borderRadius: 10,
-    alignItems: "flex-start",
-  },
-  myMessage: {
-    backgroundColor: "#dcf8c6",
-    alignSelf: "flex-end",
-  },
-  theirMessage: {
-    backgroundColor: "#eee",
-    alignSelf: "flex-start",
-  },
-  messageText: {
-    fontSize: 16,
-  },
-  messageImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  completionContainer: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  completionContent: {
-    padding: 20,
-  },
-  completionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
-    color: "#007bff",
-  },
-  summaryContainer: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#333",
-  },
-  summaryText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#444",
-  },
-  imageContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  imageTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 12,
-    color: "#333",
-  },
-  completionImage: {
-    width: "100%",
-    height: 300,
-    borderRadius: 12,
-  },
-  loadingContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 8,
-    color: "#666",
-    fontSize: 16,
-  },
-  errorContainer: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: "#ffebee",
-    borderRadius: 8,
-  },
-  errorText: {
-    color: "#d32f2f",
-    fontSize: 14,
-  },
-});
