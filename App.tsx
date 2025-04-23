@@ -17,6 +17,7 @@ import StoryRoomsPage from "./src/screens/StoryRoomsPage";
 import ProfilePage from "./src/screens/ProfilePage";
 import Chat2List from "./src/screens/Chat2List";
 import Chat2 from "./src/screens/Chat2";
+import StoryDetailsPage from "./src/screens/StoryDetailsPage";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -89,6 +90,7 @@ function MainStack() {
         <Stack.Screen name="Chats" component={Chat} />
         <Stack.Screen name="Chat List" component={Chat2List} />
         <Stack.Screen name="ChatScreen" component={Chat2} />
+        <Stack.Screen name="StoryDetails" component={StoryDetailsPage} />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
