@@ -28,26 +28,15 @@ import {
   AuthenticatedUserContext,
 } from "./src/contexts/AuthenticatedUser";
 
-
 const Stack = createStackNavigator();
-const AuthenticatedUserContext = createContext({});
-
-const AuthenticatedUserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  return (
-    <AuthenticatedUserContext.Provider value={{ user, setUser }}>
-      {children}
-    </AuthenticatedUserContext.Provider>
-  );
-};
 
 function ChatStack() {
   return (
     <GestureHandlerRootView>
       <SafeAreaProvider>
-        <View style={styles.header}>
-          <Text style={styles.title}>Hello! this is co-write</Text>
-          <Text style={styles.subtitle}>This is a subtitle</Text>
+        <View style={appStyles.header}>
+          <Text style={appStyles.title}>Hello! this is co-write</Text>
+          <Text style={appStyles.subtitle}>This is a subtitle</Text>
         </View>
 
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -80,7 +69,6 @@ function MainStack() {
   return (
     <GestureHandlerRootView style={appStyles.container}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-
         <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Home" component={LandingPage} />
         <Stack.Screen name="Search" component={SearchPage} />

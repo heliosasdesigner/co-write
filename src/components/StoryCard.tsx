@@ -3,8 +3,18 @@ import React from "react";
 import { storyCardStyles } from "../styles";
 
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 
+type RootStackParamList = {
+  StoryDetails: {
+    id: string;
+    userId: string;
+    topic: string;
+    createdAt: string;
+    video?: string;
+    votes?: number;
+  };
+};
 
 type Props = {
   id: string;
@@ -16,7 +26,7 @@ type Props = {
 };
 
 const StoryCard = ({ id, userId, topic, createdAt, video, votes }: Props) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const createdDate = createdAt.toDate ? createdAt.toDate() : createdAt;
   const formattedDate = createdDate.toLocaleString();
 
@@ -33,11 +43,9 @@ const StoryCard = ({ id, userId, topic, createdAt, video, votes }: Props) => {
   };
 
   return (
-
-    <View style={storyCardStyles.card} onPress={handlePress}>
+    <TouchableOpacity style={storyCardStyles.card} onPress={handlePress}>
       <Text style={storyCardStyles.title}>{topic}</Text>
       <Text style={storyCardStyles.description}>{formattedDate}</Text>
-
       <Image
         style={storyCardStyles.footer}
         source={{

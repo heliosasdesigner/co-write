@@ -46,22 +46,26 @@ const SearchPage = () => {
     setFilteredStories(filtered);
   }, [searchQuery, allStories]);
 
-  return (
-    <PageLayout currentTab="Search" scrollable>
+  const ListHeaderComponent = () => (
+    <>
       <View style={storyRoomsStyles.header}>
         <Text style={storyRoomsStyles.headerTitle}>Search Stories</Text>
       </View>
-
       <TextInput
         style={storyRoomsStyles.roomItem}
         placeholder="Type a keyword..."
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
+    </>
+  );
 
+  return (
+    <PageLayout currentTab="Search" scrollable={false}>
       <FlatList
         data={filteredStories}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={ListHeaderComponent}
         renderItem={({ item }) => (
           <View style={storyRoomsStyles.roomItem}>
             <Text style={storyRoomsStyles.roomTitle}>
