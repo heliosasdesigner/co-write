@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
+
+
 import { Picker } from "@react-native-picker/picker";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
+import { storyRoomsStyles, authStyles } from "../styles";
+
+interface Story {
+  id: string;
+  title: string;
+  createdAt: Date;
+  [key: string]: any;
+}
 
 const ProfilePage = () => {
   const [filter, setFilter] = useState("date");
-  const [stories, setStories] = useState([]);
+  const [stories, setStories] = useState<Story[]>([]);
   const user = auth.currentUser;
 
   useEffect(() => {
@@ -15,15 +25,18 @@ const ProfilePage = () => {
       try {
         if (!user) return;
 
-        const q = query(collection(db, "stories"), where("userId", "==", user.uid));
+        const q = query(
+          collection(db, "stories"),
+          where("userId", "==", user.uid)
+        );
         const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as Story[];
         setStories(data);
-      } catch (err) {
-        console.error("Error fetching stories:", err);
+      } catch (error: unknown) {
+        console.error("Error fetching stories:", error);
       }
     };
 
@@ -71,8 +84,10 @@ const ProfilePage = () => {
             ListEmptyComponent={
               <Text style={styles.emptyText}>No stories found.</Text>
             }
+
         />
-      </PageLayout>
+      </View>
+    </PageLayout>
   );
 };
 

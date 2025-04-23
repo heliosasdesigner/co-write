@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, Button, Image } from "react-native";
 import { useImageRequest } from "../hooks/useImageRequest";
-import { uploadSectionImages } from "../../api/stories";
+import { uploadSectionImages } from "../api/stories";
 
 const ExampleImageGeneration = () => {
   const [draftPrompt, setDraftPrompt] = useState<string>("");

@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  Button,
   Alert,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   FlatList,
@@ -13,7 +11,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRoute, RouteProp } from "@react-navigation/native";
-import { ChatsFlowParamList } from "../navigation/ChatsFlowStack";
+import { RootStackParamList } from "../types/navigation";
 import { chatWithLLM } from "../../LLMs/config";
 import {
   query,
@@ -23,9 +21,10 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
-import { getStoryChats, addChatMessage, ChatMessage } from "../../api/stories";
+import { getStoryChats, addChatMessage, ChatMessage } from "../api/stories";
+import { chatStyles, pageLayoutStyles } from "../styles";
 
-type ChatScreenRouteProp = RouteProp<ChatsFlowParamList, "Chat">;
+type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
 
 const formatTimestamp = (timestamp: Timestamp | Date) => {
   if (timestamp instanceof Timestamp) {
@@ -36,22 +35,12 @@ const formatTimestamp = (timestamp: Timestamp | Date) => {
 
 export default function Chats() {
   const route = useRoute<ChatScreenRouteProp>();
+  const { roomId: storyId } = route.params;
 
-  const { storyId } = route.params;
-
-  // Then destructure optional params with defaults
-  console.log(route.params);
-  const {
-    topic = "Untitled",
-    aiAssistant = false,
-    wordLimit = "100",
-    numberOfPages = "6",
-  } = route.params;
-
-  // Early return if no storyId (this shouldn't happen due to TypeScript, but good practice)
+  // Early return if no storyId
   if (!storyId) {
     return (
-      <View style={styles.container}>
+      <View style={pageLayoutStyles.container}>
         <Text>Error: No story ID provided</Text>
       </View>
     );
@@ -63,22 +52,7 @@ export default function Chats() {
   const [hintText, setHintText] = useState("");
   const [loadingHint, setLoadingHint] = useState(false);
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
-  const pagesAllowed = parseInt(numberOfPages, 10);
-  const userPages = messages.length - 1;
-  const wordLimitInteger = parseInt(wordLimit, 10);
   const [composerText, setComposerText] = useState("");
-  const wordsUsed = composerText.trim().split(/\s+/).filter(Boolean).length;
-  const remaining = Math.max(wordLimitInteger - wordsUsed, 0);
-
-  const storySettings = {
-    text:
-      `Welcome to a story about "${topic}".\n` +
-      `AI: ${aiAssistant}\n` +
-      `Word Limit: ${wordLimit}\n` +
-      `Pages: ${numberOfPages}`,
-    createdAt: new Date(),
-    user: { _id: "System" },
-  };
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -139,8 +113,11 @@ export default function Chats() {
       const aiResponse = await chatWithLLM(promptHint);
       setHintText(aiResponse);
       setShowHint(true);
-    } catch (err: any) {
-      Alert.alert("AI Hint Error", err.message);
+    } catch (error: unknown) {
+      Alert.alert(
+        "AI Hint Error",
+        error instanceof Error ? error.message : "An error occurred"
+      );
     } finally {
       setLoadingHint(false);
     }
@@ -158,30 +135,12 @@ export default function Chats() {
       return;
     }
 
+    if (!input.trim()) return;
+
     const newMessage = {
       text: input.trim(),
       user: { _id: currentUser.email },
     };
-
-    if (!input.trim()) return;
-
-    if (userPages >= pagesAllowed) {
-      Alert.alert(
-        "Page limit reached",
-        `You've already used all ${pagesAllowed} pages of the story.`
-      );
-      return;
-    }
-
-    const incomingText = newMessage.text;
-    const wordCount = incomingText.split(/\s+/).filter(Boolean).length;
-    if (wordCount > wordLimitInteger) {
-      Alert.alert(
-        "Word limit exceeded",
-        `Your page is ${wordCount} words; limit is ${wordLimitInteger}.`
-      );
-      return;
-    }
 
     try {
       await addChatMessage(storyId, newMessage);
@@ -194,150 +153,42 @@ export default function Chats() {
   };
 
   return (
-    <View style={(styles.container, { flex: 1 })}>
-      {aiAssistant && (
-        <View style={styles.hintButtonContainer}>
-          {loadingHint ? (
-            <ActivityIndicator size="small" />
-          ) : (
-            <Button
-              title={showHint ? "Hide AI Hint" : "Get AI Hint"}
-              onPress={() => (showHint ? setShowHint(false) : handleHint())}
-            />
-          )}
-        </View>
-      )}
-
-      {showHint && (
-        <View style={styles.hintBox}>
-          <Text style={styles.hintText}>{hintText}</Text>
-        </View>
-      )}
+    <View style={chatStyles.container}>
+      <FlatList
+        ref={flatListRef}
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View
+            style={[
+              chatStyles.messageBubble,
+              item.user._id === auth.currentUser?.email
+                ? chatStyles.myMessage
+                : chatStyles.theirMessage,
+            ]}
+          >
+            <Text style={chatStyles.messageText}>{item.text}</Text>
+          </View>
+        )}
+      />
 
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={100}
       >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.messageContainer}>
-              <Text style={styles.messageAuthor}>
-                {item.user._id === auth.currentUser?.email
-                  ? "You"
-                  : item.user._id}
-              </Text>
-              <Text style={styles.messageText}>{item.text}</Text>
-              <Text style={styles.messageTimestamp}>
-                {formatTimestamp(item.createdAt)}
-              </Text>
-            </View>
-          )}
-          contentContainerStyle={{ padding: 16 }}
-          showsVerticalScrollIndicator={true}
-        />
-        <Text style={styles.counter}>Remaining Words: {remaining}</Text>
-        <View style={styles.inputContainer}>
+        <View style={chatStyles.inputContainer}>
           <TextInput
+            style={chatStyles.input}
             value={input}
-            onChangeText={(text) => {
-              setInput(text);
-              const words = text.trim().split(/\s+/).filter(Boolean).length;
-              if (words <= wordLimitInteger) {
-                setComposerText(text);
-              }
-            }}
-            placeholder="Write your message..."
-            style={styles.input}
+            onChangeText={setInput}
+            placeholder="Type a message..."
             multiline
           />
-          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-            <Text style={{ color: "#fff" }}>Send</Text>
+          <TouchableOpacity style={chatStyles.sendButton} onPress={handleSend}>
+            <Text style={chatStyles.sendText}>Send</Text>
           </TouchableOpacity>
         </View>
-        <Text
-          style={{
-            marginTop: 8,
-            color: remaining < 0 ? "red" : "black",
-          }}
-        ></Text>
       </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  hintButtonContainer: {
-    padding: 8,
-  },
-  hintBox: {
-    backgroundColor: "#f0f0f0",
-    marginHorizontal: 8,
-    marginBottom: 8,
-    padding: 10,
-    borderRadius: 6,
-  },
-  hintText: {
-    color: "#333",
-  },
-  accessory: {
-    paddingHorizontal: 12,
-    paddingBottom: 4,
-  },
-  counter: {
-    alignSelf: "flex-end",
-    fontSize: 12,
-    color: "#666",
-  },
-  messageContainer: {
-    marginBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    paddingBottom: 12,
-  },
-  messageAuthor: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 4,
-    fontWeight: "600",
-  },
-  messageText: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: "#111",
-  },
-  messageTimestamp: {
-    fontSize: 12,
-    color: "#aaa",
-    marginTop: 4,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    padding: 12,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "#fff",
-    alignItems: "flex-end",
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: "#f1f1f1",
-    maxHeight: 100,
-  },
-  sendButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginLeft: 8,
-  },
-});
