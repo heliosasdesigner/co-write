@@ -19,7 +19,6 @@ type NavBarProps = {
   currentTab?: keyof RootStackParamList;
 };
 
-
 const tabConfig: Array<{
   route: keyof RootStackParamList;
   label: string;
@@ -30,7 +29,6 @@ const tabConfig: Array<{
   { route: "New Story", label: "New Story", iconName: "create" },
   { route: "Story Rooms", label: "Story Rooms", iconName: "book" },
   { route: "Profile", label: "Profile", iconName: "person" },
-
 ];
 
 const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {

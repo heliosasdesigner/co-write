@@ -12,7 +12,7 @@ import Signup from "./src/screens/Signup";
 import NavBar from "./src/navigation/NavBar";
 
 import SearchPage from "./src/screens/SearchPage";
-import NewStoryPage from "./src/screens/NewStoryPage";
+import Chat2NewChat from "./src/screens/Chat2NewChat";
 import StoryRoomsPage from "./src/screens/StoryRoomsPage";
 import ProfilePage from "./src/screens/ProfilePage";
 import Chat2List from "./src/screens/Chat2List";
@@ -42,10 +42,10 @@ function ChatStack() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="Home" component={LandingPage} />
           <Stack.Screen name="Search" component={SearchPage} />
-          <Stack.Screen name="New Story" component={NewStoryPage} />
-          <Stack.Screen name="Story Rooms" component={StoryRoomsPage} />
+          <Stack.Screen name="New Story" component={Chat2NewChat} />
+          <Stack.Screen name="Story Rooms" component={Chat2List} />
           <Stack.Screen name="Profile" component={ProfilePage} />
-          <Stack.Screen name="Chats" component={Chat} />
+          <Stack.Screen name="Chats" component={Chat2} />
         </Stack.Navigator>
 
         <StatusBar style="auto" />
@@ -58,8 +58,14 @@ function AuthStack() {
   return (
     <GestureHandlerRootView>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Login" component={Login} />
-        <Stack.Screen name="Signup" component={Signup} />
+        <Stack.Screen
+          name="Login"
+          component={Login as React.ComponentType<any>}
+        />
+        <Stack.Screen
+          name="Signup"
+          component={Signup as React.ComponentType<any>}
+        />
       </Stack.Navigator>
     </GestureHandlerRootView>
   );
@@ -72,10 +78,10 @@ function MainStack() {
         <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Home" component={LandingPage} />
         <Stack.Screen name="Search" component={SearchPage} />
-        <Stack.Screen name="New Story" component={NewStoryPage} />
-        <Stack.Screen name="Story Rooms" component={StoryRoomsPage} />
+        <Stack.Screen name="New Story" component={Chat2NewChat} />
+        <Stack.Screen name="Story Rooms" component={Chat2List} />
         <Stack.Screen name="Profile" component={ProfilePage} />
-        <Stack.Screen name="Chats" component={Chat} />
+        <Stack.Screen name="Chats" component={Chat2} />
         <Stack.Screen name="Chat List" component={Chat2List} />
         <Stack.Screen name="ChatScreen" component={Chat2} />
         <Stack.Screen name="StoryDetails" component={StoryDetailsPage} />

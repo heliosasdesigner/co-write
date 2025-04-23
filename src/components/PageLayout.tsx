@@ -8,6 +8,8 @@ type RootStackParamList = {
   "New Story": undefined;
   "Story Rooms": undefined;
   Profile: undefined;
+  "Chat List": undefined;
+  Chats: undefined;
 };
 
 type PageLayoutProps = {
