@@ -39,26 +39,26 @@ const ProfilePage = () => {
   });
 
   return (
-      <PageLayout currentTab="Profile">
-        {/* Avatar & Username */}
+      // Use PageLayout's scrollable and avoid nesting FlatList inside ScrollView
+      <PageLayout currentTab="Profile" scrollable={true}>
         <Text style={styles.avatar}>👤</Text>
         <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
         <Text style={styles.bio}>Short Bio (optional)</Text>
 
-        {/* Filter Section */}
-        <View style={styles.filterRow}>
+        <View style={[styles.filterRow, { zIndex: 999, elevation: 999 }]}>
           <Text style={styles.filterLabel}>Filter:</Text>
-          <Picker
-              selectedValue={filter}
-              style={styles.picker}
-              onValueChange={(itemValue) => setFilter(itemValue)}
-          >
-            <Picker.Item label="Date Made" value="date" />
-            <Picker.Item label="A - Z" value="az" />
-          </Picker>
+          <View style={styles.pickerContainer}>
+            <Picker
+                selectedValue={filter}
+                onValueChange={(itemValue) => setFilter(itemValue)}
+                dropdownIconColor="#000"
+            >
+              <Picker.Item label="Date Made" value="date" />
+              <Picker.Item label="A - Z" value="az" />
+            </Picker>
+          </View>
         </View>
 
-        {/* Past Stories */}
         <Text style={styles.sectionTitle}>PAST STORIES</Text>
         <FlatList
             data={sortedStories}
@@ -99,22 +99,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+    paddingHorizontal: 10,
   },
   filterLabel: {
     marginRight: 10,
   },
-  picker: {
+  pickerContainer: {
     flex: 1,
-    height: 40,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
   },
   sectionTitle: {
     fontWeight: "bold",
     marginBottom: 8,
+    paddingHorizontal: 10,
   },
   storyItem: {
     padding: 10,
     backgroundColor: "#fff",
     marginBottom: 6,
+    marginHorizontal: 10,
     borderRadius: 6,
     borderColor: "#ddd",
     borderWidth: 1,
