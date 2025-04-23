@@ -1,21 +1,43 @@
 import React from "react";
-import { View, Text, Image } from "react-native";
+
 import { storyCardStyles } from "../styles";
 
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+
+
 type Props = {
+  id: string;
+  userId: string;
   topic: string;
   createdAt: any;
   video?: string;
+  votes?: number;
 };
 
-const StoryCard = ({ topic, createdAt, video }: Props) => {
+const StoryCard = ({ id, userId, topic, createdAt, video, votes }: Props) => {
+  const navigation = useNavigation();
   const createdDate = createdAt.toDate ? createdAt.toDate() : createdAt;
   const formattedDate = createdDate.toLocaleString();
 
+  const handlePress = () => {
+    console.log("StoryCard ID:", id);
+    navigation.navigate("StoryDetails", {
+      id,
+      userId,
+      topic,
+      createdAt: formattedDate,
+      video,
+      votes,
+    });
+  };
+
   return (
-    <View style={storyCardStyles.card}>
+
+    <View style={storyCardStyles.card} onPress={handlePress}>
       <Text style={storyCardStyles.title}>{topic}</Text>
       <Text style={storyCardStyles.description}>{formattedDate}</Text>
+
       <Image
         style={storyCardStyles.footer}
         source={{
@@ -24,7 +46,7 @@ const StoryCard = ({ topic, createdAt, video }: Props) => {
             : "https://via.placeholder.com/100",
         }}
       />
-    </View>
+    </TouchableOpacity>
   );
 };
 

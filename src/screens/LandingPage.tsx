@@ -14,6 +14,7 @@ interface Story {
   video?: string;
   [key: string]: any;
 }
+import { getAuth } from "firebase/auth";
 
 const LandingPage = () => {
   const [stories, setStories] = useState<Story[]>([]);
@@ -22,10 +23,22 @@ const LandingPage = () => {
     const fetchStories = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "stories"));
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Story[];
+
+        const data = querySnapshot.docs.map((doc) => {
+          const storyData = doc.data();
+
+          return {
+            id: doc.id,
+            userId: storyData.userId || "",
+            topic: storyData.topic,
+            video: storyData.video,
+            votes: storyData.votes,
+            createdAt: storyData.createdAt?.toDate
+              ? storyData.createdAt.toDate()
+              : storyData.createdAt,
+          };
+        });
+
         setStories(data);
       } catch (error: unknown) {
         console.error("Error fetching stories:", error);
@@ -38,6 +51,7 @@ const LandingPage = () => {
   return (
     <PageLayout currentTab="Home" scrollable>
       <Header />
+
       <ScrollView contentContainerStyle={landingStyles.grid}>
         {stories.length === 0 ? (
           <View style={landingStyles.emptyState}>
@@ -54,6 +68,7 @@ const LandingPage = () => {
             </View>
           ))
         )}
+
       </ScrollView>
     </PageLayout>
   );

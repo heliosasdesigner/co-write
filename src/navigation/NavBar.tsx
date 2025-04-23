@@ -11,11 +11,14 @@ type RootStackParamList = {
   "New Story": undefined;
   "Story Rooms": undefined;
   Profile: undefined;
+  "Chat List": undefined;
+  Chats: undefined;
 };
 
 type NavBarProps = {
   currentTab?: keyof RootStackParamList;
 };
+
 
 const tabConfig: Array<{
   route: keyof RootStackParamList;
@@ -27,6 +30,7 @@ const tabConfig: Array<{
   { route: "New Story", label: "New Story", iconName: "create" },
   { route: "Story Rooms", label: "Story Rooms", iconName: "book" },
   { route: "Profile", label: "Profile", iconName: "person" },
+
 ];
 
 const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
