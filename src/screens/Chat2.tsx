@@ -10,6 +10,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   Button,
+  Image,
 } from "react-native";
 import {
   collection,
@@ -26,6 +27,7 @@ import { db, auth } from "../../firebase/config";
 import React, { useEffect, useState, useRef } from "react";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { chatWithLLM } from "../../LLMs/config";
+import { generateImage } from "../../LLMs/imageGenerator";
 
 type RootStackParamList = {
   ChatScreen: { chatId: string; aiAssistant?: boolean };
@@ -35,9 +37,13 @@ type ChatScreenRouteProp = RouteProp<RootStackParamList, "ChatScreen">;
 type Message = {
   id: string;
   senderId: string;
-  text: string;
+  text?: string;
+  imageUrl?: string;
   timestamp: any;
 };
+
+const PLACEHOLDER_IMAGE =
+  "https://via.placeholder.com/1024?text=Image+Unavailable";
 
 const ChatScreen = () => {
   const { chatId, aiAssistant = true } = useRoute<ChatScreenRouteProp>().params;
@@ -51,6 +57,7 @@ const ChatScreen = () => {
   const [hintText, setHintText] = useState("");
   const [loadingHint, setLoadingHint] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [imageGenerating, setImageGenerating] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const user = auth.currentUser;
 
@@ -82,8 +89,8 @@ const ChatScreen = () => {
 
   const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
   const overLimit = wordLimit != null && wordCount > wordLimit;
-  const pageCount = messages.length;
-  const overPageLimit = numberOfPages != null && pageCount > numberOfPages;
+  const textPages = messages.filter((m) => !!m.text).length;
+  const overPageLimit = numberOfPages != null && textPages >= numberOfPages;
 
   const handleHint = async () => {
     if (!composerText.trim()) {
@@ -94,12 +101,8 @@ const ChatScreen = () => {
     }
     setLoadingHint(true);
     try {
-      const promptHint =
-        `I'm writing a story but I'm stuck for ideas. ` +
-        `Here's my current draft:\n\n${composerText}`;
-
+      const promptHint = `I'm writing a story but I'm stuck for ideas. Here's my current draft:\n\n${composerText}`;
       const ai = await chatWithLLM([{ role: "user", content: promptHint }]);
-
       setHintText(ai);
       setShowHint(true);
     } catch (e: any) {
@@ -112,12 +115,13 @@ const ChatScreen = () => {
   const handleGenerate = async () => {
     if (!aiAssistant) return;
     setGenerating(true);
-
     try {
-      const history = messages.map((m) => ({
-        role: m.senderId === user?.uid ? "user" : "assistant",
-        content: m.text,
-      }));
+      const history = messages
+        .filter((m) => !!m.text)
+        .map((m) => ({
+          role: m.senderId === user?.uid ? "user" : "assistant",
+          content: m.text!,
+        }));
 
       const payload = [
         { role: "system", content: "You are a helpful story assistant." },
@@ -125,7 +129,7 @@ const ChatScreen = () => {
         {
           role: "user",
           content: `Continue as page ${
-            pageCount + 1
+            textPages + 1
           } of ${numberOfPages}, in no more than ${wordLimit} words.`,
         },
       ];
@@ -138,10 +142,32 @@ const ChatScreen = () => {
         timestamp: serverTimestamp(),
       });
       flatListRef.current?.scrollToEnd({ animated: true });
+
+      if (numberOfPages != null && textPages + 1 >= numberOfPages) {
+        setImageGenerating(true);
+        let imageUrl = PLACEHOLDER_IMAGE;
+        try {
+          const storyText = [
+            ...history.map((h) => `${h.role}: ${h.content}`),
+            `AI: ${aiText.trim()}`,
+          ].join("\n\n");
+          imageUrl = await generateImage(storyText);
+        } catch (imgErr: any) {
+          console.warn("Image generation failed:", imgErr);
+        }
+
+        await addDoc(collection(db, "chats", chatId, "messages"), {
+          imageUrl,
+          senderId: "AI",
+          timestamp: serverTimestamp(),
+        });
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }
     } catch (e: any) {
       Alert.alert("AI Generate Error", e.message);
     } finally {
       setGenerating(false);
+      setImageGenerating(false);
     }
   };
 
@@ -174,14 +200,19 @@ const ChatScreen = () => {
               />
             )}
           </View>
-
           <View style={styles.hintButtonContainer}>
             <Button
               title={generating ? "Generating..." : "Continue with AI"}
               onPress={handleGenerate}
-              disabled={generating}
+              disabled={generating || imageGenerating}
             />
           </View>
+          {imageGenerating && (
+            <View style={styles.hintButtonContainer}>
+              <ActivityIndicator size="small" />
+              <Text style={{ textAlign: "center" }}>Generating image…</Text>
+            </View>
+          )}
         </>
       )}
 
@@ -198,7 +229,7 @@ const ChatScreen = () => {
       >
         <FlatList
           data={messages}
-          keyExtractor={(i) => i.id}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View
               style={[
@@ -208,7 +239,13 @@ const ChatScreen = () => {
                   : styles.theirMessage,
               ]}
             >
-              <Text style={styles.messageText}>{item.text}</Text>
+              {item.imageUrl && (
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={styles.messageImage}
+                />
+              )}
+              {item.text && <Text style={styles.messageText}>{item.text}</Text>}
             </View>
           )}
           ref={flatListRef}
@@ -237,7 +274,7 @@ const ChatScreen = () => {
               color: overPageLimit ? "red" : "gray",
             }}
           >
-            {pageCount}/{numberOfPages} pages
+            {textPages}/{numberOfPages} pages
           </Text>
         )}
 
@@ -257,7 +294,9 @@ const ChatScreen = () => {
             disabled={overLimit || overPageLimit}
             style={[
               styles.sendButton,
-              (overLimit || overPageLimit) && { backgroundColor: "#ccc" },
+              (overLimit || overPageLimit) && {
+                backgroundColor: "#ccc",
+              },
             ]}
           >
             <Text style={styles.sendText}>Send</Text>
@@ -318,6 +357,7 @@ const styles = StyleSheet.create({
     padding: 10,
     maxWidth: "70%",
     borderRadius: 10,
+    alignItems: "flex-start",
   },
   myMessage: {
     backgroundColor: "#dcf8c6",
@@ -329,5 +369,11 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 8,
   },
 });
