@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase/config";
@@ -44,13 +44,14 @@ const ProfilePage = () => {
         <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
         <Text style={styles.bio}>Short Bio (optional)</Text>
 
-        <View style={styles.filterRowWrapper}>
+        <View style={styles.pickerWrapper}>
           <Text style={styles.filterLabel}>Filter:</Text>
           <View style={styles.pickerContainer}>
             <Picker
                 selectedValue={filter}
                 onValueChange={(itemValue) => setFilter(itemValue)}
                 dropdownIconColor="#000"
+                mode={Platform.OS === "ios" ? "dropdown" : "dialog"} // helpful for iOS
             >
               <Picker.Item label="Date Made" value="date" />
               <Picker.Item label="A - Z" value="az" />
@@ -92,13 +93,13 @@ const styles = StyleSheet.create({
     color: "#888",
     marginBottom: 20,
   },
-  filterRowWrapper: {
+  pickerWrapper: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
     paddingHorizontal: 10,
-    zIndex: 999,
-    elevation: 999,
+    zIndex: 10,
+    elevation: 10,
     position: "relative",
   },
   filterLabel: {
@@ -110,8 +111,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 6,
-    position: "relative",
-    zIndex: 999,
+    overflow: "hidden",
+    zIndex: 20,
   },
   sectionTitle: {
     fontWeight: "bold",
@@ -135,4 +136,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePage;
-
