@@ -1,6 +1,20 @@
 import React from "react";
+
+import { storyCardStyles } from "../styles";
+
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+
+type RootStackParamList = {
+  StoryDetails: {
+    id: string;
+    userId: string;
+    topic: string;
+    createdAt: string;
+    video?: string;
+    votes?: number;
+  };
+};
 
 type Props = {
   id: string;
@@ -12,7 +26,7 @@ type Props = {
 };
 
 const StoryCard = ({ id, userId, topic, createdAt, video, votes }: Props) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const createdDate = createdAt.toDate ? createdAt.toDate() : createdAt;
   const formattedDate = createdDate.toLocaleString();
 
@@ -29,13 +43,11 @@ const StoryCard = ({ id, userId, topic, createdAt, video, votes }: Props) => {
   };
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress}>
-      <View style={styles.tagRow}>
-        <Text style={styles.tag}>{topic}</Text>
-        <Text style={styles.tag}>{formattedDate}</Text>
-      </View>
+    <TouchableOpacity style={storyCardStyles.card} onPress={handlePress}>
+      <Text style={storyCardStyles.title}>{topic}</Text>
+      <Text style={storyCardStyles.description}>{formattedDate}</Text>
       <Image
-        style={styles.image}
+        style={storyCardStyles.footer}
         source={{
           uri: video
             ? "https://www.seekscholar.com/sites/default/files/styles/node_image/public/1_b1T9PtMK3bxboKvnSctNmg.jpeg?itok=EwzrcGcU"
@@ -45,31 +57,5 @@ const StoryCard = ({ id, userId, topic, createdAt, video, votes }: Props) => {
     </TouchableOpacity>
   );
 };
-const styles = StyleSheet.create({
-  card: {
-    width: "32%",
-    aspectRatio: 1,
-    backgroundColor: "#c8d7e6",
-    borderRadius: 8,
-    padding: 2,
-    marginBottom: 0,
-  },
-  tagRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  tag: {
-    fontSize: 10,
-    backgroundColor: "#607192",
-    color: "#fff",
-    paddingHorizontal: 6,
-    borderRadius: 4,
-  },
-  image: {
-    flex: 1,
-    marginTop: 8,
-    borderRadius: 4,
-  },
-});
 
 export default StoryCard;
