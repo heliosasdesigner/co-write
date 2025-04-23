@@ -23,7 +23,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
-import { getStoryChats, addChatMessage, ChatMessage } from "../../api/stories";
+import { getStoryChats, addChatMessage, ChatMessage } from "../api/stories";
 
 type ChatScreenRouteProp = RouteProp<ChatsFlowParamList, "Chat">;
 

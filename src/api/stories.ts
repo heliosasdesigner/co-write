@@ -1,4 +1,4 @@
-import { db, storage } from "../firebase/config";
+import { db, storage } from "../../firebase/config";
 import {
   collection,
   getDocs,
@@ -174,6 +174,26 @@ export const addChatMessage = async (
     await addDoc(chatCollectionRef, messageWithTimestamp);
   } catch (err) {
     console.error("Error adding chat message:", err);
+    throw err;
+  }
+};
+
+export const fetchSectionImages = async (chatId: string): Promise<string[]> => {
+  try {
+    const chatDoc = doc(db, "chats", chatId);
+    const chatSnapshot = await getDocs(collection(chatDoc, "messages"));
+
+    // Filter messages that have imageUrl and are from AI
+    const images = chatSnapshot.docs
+      .filter((doc) => {
+        const data = doc.data();
+        return data.senderId === "AI" && data.imageUrl;
+      })
+      .map((doc) => doc.data().imageUrl);
+
+    return images;
+  } catch (err) {
+    console.error("Error fetching section images:", err);
     throw err;
   }
 };

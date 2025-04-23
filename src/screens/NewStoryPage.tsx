@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import { createStory, createInitialChat } from "../../api/stories";
+import { createStory, createInitialChat } from "../api/stories";
 import { auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
 

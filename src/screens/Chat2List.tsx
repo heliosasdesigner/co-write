@@ -25,6 +25,7 @@ import NewChatModal from "./Chat2NewChat";
 
 type RootStackParamList = {
   ChatScreen: { chatId: string };
+  ChatList: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "ChatScreen">;
@@ -35,6 +36,11 @@ type Chat = {
   lastMessage: string;
   lastMessageTimestamp: any;
   otherUser: string;
+  title?: string;
+  topic?: string;
+  aiAssistant?: boolean;
+  wordLimit?: number;
+  numberOfPages?: number;
 };
 
 const ChatListScreen = () => {
@@ -57,8 +63,15 @@ const ChatListScreen = () => {
         const data = doc.data();
         return {
           id: doc.id,
-          ...data,
+          participants: data.participants,
+          lastMessage: data.lastMessage,
+          lastMessageTimestamp: data.lastMessageTimestamp,
           otherUser: data.participants.find((p: string) => p !== user.uid),
+          title: data.title,
+          topic: data.topic,
+          aiAssistant: data.aiAssistant,
+          wordLimit: data.wordLimit,
+          numberOfPages: data.numberOfPages,
         };
       });
       setChats(chatList);
@@ -73,12 +86,12 @@ const ChatListScreen = () => {
     title: string,
     topic: string,
     wordLimit: number,
-    numberOfPages: number
+    numberOfPages?: string
   ) => {
     if (!user) return;
 
     const participants = [user?.uid, otherUserId].sort();
-    const chatId = participants.join("_");
+    const chatId = `${participants.join("_")}_${Date.now()}`;
 
     const chatRef = doc(db, "chats", chatId);
 
@@ -88,7 +101,7 @@ const ChatListScreen = () => {
       title,
       topic,
       wordLimit,
-      numberOfPages,
+      numberOfPages: numberOfPages ? parseInt(numberOfPages) : null,
       lastMessage: "",
       lastMessageTimestamp: serverTimestamp(),
     });
@@ -110,7 +123,7 @@ const ChatListScreen = () => {
   );
 
   return (
-    <PageLayout currentTab="Chat List" scrollable>
+    <PageLayout currentTab="ChatList">
       <View style={styles.container}>
         <FlatList
           data={chats}
