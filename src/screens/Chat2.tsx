@@ -15,7 +15,6 @@ import {
   collection,
   query,
   orderBy,
-  where,
   onSnapshot,
   addDoc,
   getDoc,
@@ -31,7 +30,6 @@ import { chatWithLLM } from "../../LLMs/config";
 type RootStackParamList = {
   ChatScreen: { chatId: string; aiAssistant?: boolean };
 };
-
 type ChatScreenRouteProp = RouteProp<RootStackParamList, "ChatScreen">;
 
 type Message = {
@@ -41,188 +39,150 @@ type Message = {
   timestamp: any;
 };
 
-type AIResponse = {
-  role: string;
-  content: string;
-};
-
 const ChatScreen = () => {
-  const route = useRoute<ChatScreenRouteProp>();
-  const { chatId, otherUserId } = route.params;
+  const { chatId, aiAssistant = true } = useRoute<ChatScreenRouteProp>().params;
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [AIResponse, setAIResponse] = useState<AIResponse[]>([]);
   const [wordLimit, setWordLimit] = useState<number | null>(null);
   const [numberOfPages, setNumberOfPages] = useState<number | null>(null);
   const [composerText, setComposerText] = useState("");
   const [showHint, setShowHint] = useState(false);
   const [hintText, setHintText] = useState("");
   const [loadingHint, setLoadingHint] = useState(false);
-  const [aiAssistant, setAiAssistant] = useState(true);
-  const [prompt, setPrompt] = useState("");
-
-  // const [searchQuery, setSearchQuery] = useState("");
+  const [generating, setGenerating] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-
   const user = auth.currentUser;
 
   useEffect(() => {
-    const fetchChatSettings = async () => {
-      const chatRef = doc(db, "chats", chatId);
-      const chatSnap = await getDoc(chatRef);
-      if (chatSnap.exists()) {
-        const data = chatSnap.data();
-        if (data.wordLimit) setWordLimit(data.wordLimit);
-        if (data.numberOfPages) setNumberOfPages(data.numberOfPages);
-        if (data.aiAssistant) setAiAssistant(data.aiAssistant);
+    (async () => {
+      const snap = await getDoc(doc(db, "chats", chatId));
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.wordLimit) setWordLimit(d.wordLimit);
+        if (d.numberOfPages) setNumberOfPages(d.numberOfPages);
+        if (typeof d.aiAssistant === "boolean") {
+          setAiAssistant(d.aiAssistant);
+        }
       }
-    };
-    fetchChatSettings();
+    })();
   }, [chatId]);
 
   useEffect(() => {
-    const messagesRef = collection(db, "chats", chatId, "messages");
-    const q = query(messagesRef, orderBy("timestamp", "asc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const loadedMessages: Message[] = snapshot.docs.map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data(),
-          } as Message)
-      );
-      setMessages(loadedMessages);
-    });
-
-    return () => unsubscribe();
+    const unsub = onSnapshot(
+      query(
+        collection(db, "chats", chatId, "messages"),
+        orderBy("timestamp", "asc")
+      ),
+      (snap) =>
+        setMessages(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })))
+    );
+    return () => unsub();
   }, [chatId]);
 
-  // useEffect(() => {
-  //   const query = searchQuery.toLowerCase();
-  //   const filtered = messages.filter((message) =>
-  //     (message.title || message.topic || "Untitled").toLowerCase().includes(query)
-  //   );
-  //   setFilteredStories(filtered);
-  // }, [searchQuery, allStories]);
-
   const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
-  const overLimit = wordLimit !== null && wordCount > wordLimit;
+  const overLimit = wordLimit != null && wordCount > wordLimit;
   const pageCount = messages.length;
-  const overPageLimit = wordLimit !== null && pageCount > numberOfPages;
+  const overPageLimit = numberOfPages != null && pageCount > numberOfPages;
 
   const handleHint = async () => {
     if (!composerText.trim()) {
       setHintText(
         "Please type a bit of your story first, and then I can help you brainstorm!"
       );
-      setShowHint(true);
-      return;
+      return setShowHint(true);
     }
     setLoadingHint(true);
     try {
       const promptHint =
         `I'm writing a story but I'm stuck for ideas. ` +
         `Here's my current draft:\n\n${composerText}`;
-      const aiResponse = await chatWithLLM(promptHint);
-      setHintText(aiResponse);
+
+      const ai = await chatWithLLM([{ role: "user", content: promptHint }]);
+
+      setHintText(ai);
       setShowHint(true);
-    } catch (err: any) {
-      Alert.alert("AI Hint Error", err.message);
+    } catch (e: any) {
+      Alert.alert("AI Hint Error", e.message);
     } finally {
       setLoadingHint(false);
     }
   };
 
-  // const handleSubmit = async () => {
-  //   try {
-  //     console.log("Sending prompt:", prompt);
-  //     const newResponse = await chatWithLLM(prompt);
-  //     console.log("!!!!chatWithLLM returned:", newResponse);
-  //     const messageFromLLM = {
-  //       text: newResponse.trim(),
-  //       senderId: "AI",
-  //       timestamp: serverTimestamp(),
-  //     };
-  //     setResponse(newResponse);
-  //   } catch (error) {
-  //     console.error("Error in handleSubmit:", error);
-  //     setResponse("Error: " + (error as Error).message);
-  //   }
-  // };
+  const handleGenerate = async () => {
+    if (!aiAssistant) return;
+    setGenerating(true);
 
-  const handleSend = async () => {
-    if (!input.trim() || !user || overLimit) return;
     try {
-      console.log(input, "<<<<<input");
-      console.log("Sending prompt:", prompt);
-      console.log(messages, "<<<<<messages");
-      messages.map((message) => {
-        console.log(message, "<<<<<message");
-        const { senderId, text } = message;
-        if (senderId === user.uid) {
-          setAIResponse((prev) => [...prev, { role: "user", content: text }]);
-        } else {
-          setAIResponse((prev) => [
-            ...prev,
-            { role: "assistant", content: text },
-          ]);
-        }
+      const history = messages.map((m) => ({
+        role: m.senderId === user?.uid ? "user" : "assistant",
+        content: m.text,
+      }));
 
-        // AIResponse = [{role: "user", content: text}, {role: "user", content: text]
-      });
-      console.log(AIResponse, "<<<<<AIResponse");
-      const newResponse = await chatWithLLM(AIResponse);
-      console.log(newResponse, "<<<<<newResponse");
+      const payload = [
+        { role: "system", content: "You are a helpful story assistant." },
+        ...history,
+        {
+          role: "user",
+          content: `Continue as page ${
+            pageCount + 1
+          } of ${numberOfPages}, in no more than ${wordLimit} words.`,
+        },
+      ];
 
-      setAIResponse([
-        ...AIResponse,
-        { role: "assistant", content: newResponse },
-      ]);
-    } catch (error) {
-      console.error("Error in handleSubmit:", error);
-      setAIResponse("Error: " + (error as Error).message);
-    }
+      const aiText = await chatWithLLM(payload);
 
-    let messageData;
-    if (AIResponse.length !== 0) {
-      messageData = {
-        text: newResponse.content.trim(),
+      await addDoc(collection(db, "chats", chatId, "messages"), {
+        text: aiText.trim(),
         senderId: "AI",
         timestamp: serverTimestamp(),
-      };
-    } else {
-      messageData = {
-        text: input.trim(),
-        senderId: user.uid,
-        timestamp: serverTimestamp(),
-      };
+      });
+      flatListRef.current?.scrollToEnd({ animated: true });
+    } catch (e: any) {
+      Alert.alert("AI Generate Error", e.message);
+    } finally {
+      setGenerating(false);
     }
+  };
 
-    await addDoc(collection(db, "chats", chatId, "messages"), messageData);
+  const handleSend = async () => {
+    if (!input.trim() || !user || overLimit || overPageLimit) return;
+    await addDoc(collection(db, "chats", chatId, "messages"), {
+      text: input.trim(),
+      senderId: user.uid,
+      timestamp: serverTimestamp(),
+    });
     await updateDoc(doc(db, "chats", chatId), {
       lastMessage: input.trim(),
       lastMessageTimestamp: serverTimestamp(),
     });
-
     setInput("");
-    setAIResponse([]);
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 
   return (
-    <View style={(styles.container, { flex: 1 })}>
+    <View style={{ flex: 1 }}>
       {aiAssistant && (
-        <View style={styles.hintButtonContainer}>
-          {loadingHint ? (
-            <ActivityIndicator size="small" />
-          ) : (
+        <>
+          <View style={styles.hintButtonContainer}>
+            {loadingHint ? (
+              <ActivityIndicator size="small" />
+            ) : (
+              <Button
+                title={showHint ? "Hide AI Hint" : "Get AI Hint"}
+                onPress={() => (showHint ? setShowHint(false) : handleHint())}
+              />
+            )}
+          </View>
+
+          <View style={styles.hintButtonContainer}>
             <Button
-              title={showHint ? "Hide AI Hint" : "Get AI Hint"}
-              onPress={() => (showHint ? setShowHint(false) : handleHint())}
+              title={generating ? "Generating..." : "Continue with AI"}
+              onPress={handleGenerate}
+              disabled={generating}
             />
-          )}
-        </View>
+          </View>
+        </>
       )}
 
       {showHint && (
@@ -238,7 +198,7 @@ const ChatScreen = () => {
       >
         <FlatList
           data={messages}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(i) => i.id}
           renderItem={({ item }) => (
             <View
               style={[
@@ -258,7 +218,7 @@ const ChatScreen = () => {
           }
         />
 
-        {wordLimit !== null && (
+        {wordLimit != null && (
           <Text
             style={{
               textAlign: "right",
@@ -269,7 +229,7 @@ const ChatScreen = () => {
             {wordCount}/{wordLimit} words
           </Text>
         )}
-        {numberOfPages !== null && (
+        {numberOfPages != null && (
           <Text
             style={{
               textAlign: "right",
@@ -285,20 +245,20 @@ const ChatScreen = () => {
           <TextInput
             placeholder="Write your turn..."
             value={input}
-            onChangeText={(text) => {
-              setInput(text);
-              setComposerText(text);
+            onChangeText={(t) => {
+              setInput(t);
+              setComposerText(t);
             }}
             style={styles.input}
+            multiline
           />
           <TouchableOpacity
             onPress={handleSend}
+            disabled={overLimit || overPageLimit}
             style={[
               styles.sendButton,
-              overLimit && { backgroundColor: "#ccc" },
-              overPageLimit && { backgroundColor: "#ccc" },
+              (overLimit || overPageLimit) && { backgroundColor: "#ccc" },
             ]}
-            disabled={overLimit || overPageLimit}
           >
             <Text style={styles.sendText}>Send</Text>
           </TouchableOpacity>
@@ -339,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#ccc",
-    height: 40,
+    maxHeight: 100,
   },
   sendButton: {
     marginLeft: 10,
