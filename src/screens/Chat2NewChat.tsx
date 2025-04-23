@@ -25,8 +25,9 @@ type Props =
     visible: boolean;
     onClose: () => void;
     onCreateChat: (
-      aiAssistant: boolean,
       otherUserId: string,
+      aiAssistant: boolean,
+      title: string,
       topic: string,
       wordLimit: number,
       numberOfPages?: string
@@ -38,21 +39,26 @@ const NewChatModal: React.FC<Props> = ({ visible, onClose, onCreateChat }) => {
   const [topic, setTopic] = useState("");
   const [wordLimit, setWordLimit] = useState("");
   const [aiAssistant, setaiAssistant] = useState(false);
-  const [numberOfPages, setNumberOfPages] = useState("5");
+  const [numberOfPages, setNumberOfPages] = useState("");
+  const [title, setTitle] = useState("");
 
   const handleCreate = () => {
     const limit = parseInt(wordLimit);
     if (!otherUserId || !topic || isNaN(limit) || limit < 1) return;
     onCreateChat(
-      aiAssistant,
       otherUserId.trim(),
+      aiAssistant,
+      title.trim(),
       topic.trim(),
       limit,
       numberOfPages
     );
     setOtherUserId("");
+    setaiAssistant(false);
+    setTitle("");
     setTopic("");
     setWordLimit("");
+    setNumberOfPages("");
     onClose();
   };
 
@@ -70,6 +76,12 @@ const NewChatModal: React.FC<Props> = ({ visible, onClose, onCreateChat }) => {
           <Text>AI Assistant?</Text>
           <Switch value={aiAssistant} onValueChange={setaiAssistant} />
           <TextInput
+            placeholder="Title"
+            value={title}
+            onChangeText={setTitle}
+            style={styles.input}
+          />
+          <TextInput
             placeholder="Chat Topic"
             value={topic}
             onChangeText={setTopic}
@@ -79,6 +91,13 @@ const NewChatModal: React.FC<Props> = ({ visible, onClose, onCreateChat }) => {
             placeholder="Word Limit"
             value={wordLimit}
             onChangeText={setWordLimit}
+            style={styles.input}
+            keyboardType="number-pad"
+          />
+          <TextInput
+            placeholder="Number of Pages"
+            value={numberOfPages}
+            onChangeText={setNumberOfPages}
             style={styles.input}
             keyboardType="number-pad"
           />

@@ -71,6 +71,7 @@ const ChatListScreen = () => {
   const handleCreateChat = async (
     otherUserId: string,
     aiAssistant: boolean,
+    title: string,
     topic: string,
     wordLimit: number,
     numberOfPages: number
@@ -85,6 +86,7 @@ const ChatListScreen = () => {
     await setDoc(chatRef, {
       participants,
       aiAssistant,
+      title,
       topic,
       wordLimit,
       numberOfPages,

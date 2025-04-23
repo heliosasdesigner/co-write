@@ -29,7 +29,7 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { chatWithLLM } from "../../LLMs/config";
 
 type RootStackParamList = {
-  ChatScreen: { chatId: string };
+  ChatScreen: { chatId: string; aiAssistant?: boolean };
 };
 
 type ChatScreenRouteProp = RouteProp<RootStackParamList, "ChatScreen">;
@@ -43,14 +43,19 @@ type Message = {
 
 const ChatScreen = () => {
   const route = useRoute<ChatScreenRouteProp>();
-  const { chatId, aiAssistant } = route.params;
+  const { chatId } = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [wordLimit, setWordLimit] = useState<number | null>(null);
+  const [numberOfPages, setNumberOfPages] = useState<number | null>(null);
   const [composerText, setComposerText] = useState("");
   const [showHint, setShowHint] = useState(false);
   const [hintText, setHintText] = useState("");
   const [loadingHint, setLoadingHint] = useState(false);
+  const [aiAssistant, setAiAssistant] = useState(true);
+  const [prompt, setPrompt] = useState("");
+  const [response, setResponse] = useState("");
+
   // const [searchQuery, setSearchQuery] = useState("");
   const flatListRef = useRef<FlatList>(null);
 
@@ -63,6 +68,8 @@ const ChatScreen = () => {
       if (chatSnap.exists()) {
         const data = chatSnap.data();
         if (data.wordLimit) setWordLimit(data.wordLimit);
+        if (data.numberOfPages) setNumberOfPages(data.numberOfPages);
+        if (data.aiAssistant) setAiAssistant(data.aiAssistant);
       }
     };
     fetchChatSettings();
@@ -96,6 +103,8 @@ const ChatScreen = () => {
 
   const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
   const overLimit = wordLimit !== null && wordCount > wordLimit;
+  const pageCount = messages.length;
+  const overPageLimit = wordLimit !== null && pageCount > numberOfPages;
 
   const handleHint = async () => {
     if (!composerText.trim()) {
@@ -120,8 +129,41 @@ const ChatScreen = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    try {
+      console.log("Sending prompt:", prompt);
+      const newResponse = await chatWithLLM(prompt);
+      console.log("!!!!chatWithLLM returned:", newResponse);
+      const messageFromLLM = {
+        text: newResponse.trim(),
+        senderId: "AI",
+        timestamp: serverTimestamp(),
+      };
+      setResponse(newResponse);
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      setResponse("Error: " + (error as Error).message);
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || !user || overLimit) return;
+    try {
+      console.log("Sending prompt:", prompt);
+      const newResponse = await chatWithLLM(prompt);
+      console.log("!!!!chatWithLLM returned:", newResponse);
+      const messageFromLLM = {
+        text: newResponse.trim(),
+        senderId: "",
+        timestamp: serverTimestamp(),
+      };
+      setResponse(newResponse);
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      setResponse("Error: " + (error as Error).message);
+    }
+    if (messageFromLLM.senderId === "AI") {
+    }
 
     const messageData = {
       text: input.trim(),
@@ -198,12 +240,26 @@ const ChatScreen = () => {
             {wordCount}/{wordLimit} words
           </Text>
         )}
+        {numberOfPages !== null && (
+          <Text
+            style={{
+              textAlign: "right",
+              marginRight: 10,
+              color: overPageLimit ? "red" : "gray",
+            }}
+          >
+            {pageCount}/{numberOfPages} pages
+          </Text>
+        )}
 
         <View style={styles.inputContainer}>
           <TextInput
             placeholder="Write your turn..."
             value={input}
-            onChangeText={setInput}
+            onChangeText={(text) => {
+              setInput(text);
+              setComposerText(text);
+            }}
             style={styles.input}
           />
           <TouchableOpacity
@@ -211,8 +267,9 @@ const ChatScreen = () => {
             style={[
               styles.sendButton,
               overLimit && { backgroundColor: "#ccc" },
+              overPageLimit && { backgroundColor: "#ccc" },
             ]}
-            disabled={overLimit}
+            disabled={overLimit || overPageLimit}
           >
             <Text style={styles.sendText}>Send</Text>
           </TouchableOpacity>
