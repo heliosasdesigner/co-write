@@ -1,4 +1,46 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, ViewStyle, TextStyle, ImageStyle } from "react-native";
+
+// Shared Styles
+const sharedStyles = {
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  } as ViewStyle,
+  card: {
+    padding: 15,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  } as ViewStyle,
+  header: {
+    padding: 16,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  } as ViewStyle,
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+  } as TextStyle,
+  button: {
+    backgroundColor: "#007AFF",
+    padding: 15,
+    borderRadius: 6,
+    alignItems: "center",
+  } as ViewStyle,
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  } as TextStyle,
+};
 
 // Navigation Styles
 export const navigationStyles = StyleSheet.create({
@@ -32,40 +74,23 @@ export const navigationStyles = StyleSheet.create({
 // Component Styles
 export const headerStyles = StyleSheet.create({
   header: {
+    ...sharedStyles.header,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
+  title: sharedStyles.title,
 });
 
 export const storyCardStyles = StyleSheet.create({
   card: {
+    ...sharedStyles.card,
     flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
     height: "100%",
     justifyContent: "flex-start",
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
+    ...sharedStyles.title,
     marginBottom: 12,
     color: "#333",
   },
@@ -90,10 +115,7 @@ export const storyCardStyles = StyleSheet.create({
 });
 
 export const pageLayoutStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: sharedStyles.container,
   content: {
     flex: 1,
     padding: 15,
@@ -105,53 +127,26 @@ export const pageLayoutStyles = StyleSheet.create({
   },
 });
 
-export const loginButtonStyles = StyleSheet.create({
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+// Combined button styles for login and logout
+export const buttonStyles = StyleSheet.create({
+  button: sharedStyles.button,
+  buttonText: sharedStyles.buttonText,
 });
 
-export const logoutButtonStyles = StyleSheet.create({
-  button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});
+// Alias for backward compatibility
+export const loginButtonStyles = buttonStyles;
+export const logoutButtonStyles = buttonStyles;
 
-export const exampleResponseStreamStyles = StyleSheet.create({
+// Combined example styles
+export const exampleStyles = StyleSheet.create({
   container: {
-    padding: 15,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
+    ...sharedStyles.card,
     margin: 10,
+    backgroundColor: "#f5f5f5",
   },
   text: {
     fontSize: 16,
     lineHeight: 24,
-  },
-});
-
-export const exampleImageGenerationStyles = StyleSheet.create({
-  container: {
-    padding: 15,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    margin: 10,
   },
   image: {
     width: "100%",
@@ -163,10 +158,7 @@ export const exampleImageGenerationStyles = StyleSheet.create({
 
 // Chat Styles
 export const chatStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: sharedStyles.container,
   inputContainer: {
     flexDirection: "row",
     padding: 10,
@@ -216,18 +208,13 @@ export const chatStyles = StyleSheet.create({
 
 // App Styles
 export const appStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: sharedStyles.container,
   header: {
-    padding: 16,
+    ...sharedStyles.header,
     backgroundColor: "#f2f2f2",
     alignItems: "center",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
+  title: sharedStyles.title,
   subtitle: {
     fontSize: 16,
     fontWeight: "normal",
@@ -241,13 +228,10 @@ export const appStyles = StyleSheet.create({
 
 // Auth Styles
 export const authStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  container: sharedStyles.container,
   title: {
+    ...sharedStyles.title,
     fontSize: 36,
-    fontWeight: "bold",
     color: "#007AFF",
     alignSelf: "center",
     marginBottom: 24,
@@ -260,19 +244,8 @@ export const authStyles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
   },
-  button: {
-    backgroundColor: "#007AFF",
-    height: 58,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 40,
-  },
-  buttonText: {
-    fontWeight: "bold",
-    color: "#fff",
-    fontSize: 18,
-  },
+  button: sharedStyles.button,
+  buttonText: sharedStyles.buttonText,
   errorText: {
     color: "#ff3b30",
     marginBottom: 20,
