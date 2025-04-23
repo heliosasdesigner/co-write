@@ -11,6 +11,8 @@ import {
   Button,
   Image,
   ScrollView,
+  SafeAreaView,
+  Switch,
 } from "react-native";
 import {
   collection,
@@ -25,7 +27,8 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import { chatWithLLM } from "../../LLMs/config";
 import { generateImage } from "../../LLMs/imageGenerator";
 import { useImageRequest } from "../hooks/useImageRequest";
@@ -69,6 +72,7 @@ const convertToBaseMessage = (msg: AIMessage): BaseMessage => {
 };
 
 const ChatScreen = () => {
+  const navigation = useNavigation();
   const { chatId, aiAssistant: initialAiAssistant = true } =
     useRoute<ChatScreenRouteProp>().params;
   const [aiAssistant, setAiAssistant] = useState(initialAiAssistant);
@@ -128,13 +132,25 @@ const ChatScreen = () => {
     console.log(imageUrl);
 
     uploadSectionImages(imageUrl, chatId)
-      .then((url) => {
+      .then(async (url) => {
         console.log("Image was uploaded successfully: ", url);
+        // Update the story's finished status when both image and summary exist
+        if (url && storySummary) {
+          try {
+            await updateDoc(doc(db, "chats", chatId), {
+              isFinished: true,
+              finishedAt: serverTimestamp(),
+            });
+            console.log("Story marked as finished in database");
+          } catch (error) {
+            console.error("Error updating story finished status:", error);
+          }
+        }
       })
       .catch((error) => {
         console.error("Error uploading image:", error);
       });
-  }, [imageUrl]);
+  }, [imageUrl, storySummary]);
 
   useEffect(() => {
     // Check if there are no messages or if AI summary is not found
@@ -142,6 +158,13 @@ const ChatScreen = () => {
     if (messages.length === 0 || !hasAISummary) {
       setStorySummary("");
       setStorySubmit(false);
+      // Reset finished status if summary is removed
+      updateDoc(doc(db, "chats", chatId), {
+        isFinished: false,
+        finishedAt: null,
+      }).catch((error) => {
+        console.error("Error resetting story finished status:", error);
+      });
     }
   }, [messages]);
 
@@ -428,182 +451,257 @@ const ChatScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      {aiAssistant && !storySubmit && (
-        <>
-          <View style={chatStyles.hintButtonContainer}>
-            <Button
-              title={generating ? "Generating..." : "Submit the story"}
-              onPress={handleSubmitStory}
-              disabled={
-                generating ||
-                imageGenerating ||
-                isLoading ||
-                messages.filter((m) => m.senderId !== "AI-summary").length <
-                  4 ||
-                storySubmit
-              }
-            />
-          </View>
-          {(imageGenerating || isLoading) && (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={chatStyles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={chatStyles.backButton}
+        >
+          <Ionicons name="chevron-back" size={24} color="#007AFF" />
+          <Text style={chatStyles.backButtonText}>Story Rooms</Text>
+        </TouchableOpacity>
+        <Text style={chatStyles.headerTitle}>Story</Text>
+      </View>
+
+      <View style={{ flex: 1 }}>
+        {aiAssistant && !storySubmit && (
+          <>
             <View style={chatStyles.hintButtonContainer}>
-              <ActivityIndicator size="small" />
-              <Text style={{ textAlign: "center" }}>Generating image…</Text>
+              <Button
+                title={generating ? "Generating..." : "Submit the story"}
+                onPress={handleSubmitStory}
+                disabled={
+                  generating ||
+                  imageGenerating ||
+                  isLoading ||
+                  messages.filter((m) => m.senderId !== "AI-summary").length <
+                    4 ||
+                  storySubmit
+                }
+              />
             </View>
-          )}
-          {error && (
-            <View style={chatStyles.hintButtonContainer}>
-              <Text style={{ color: "red", textAlign: "center" }}>
-                Error generating image: {error.toString()}
-              </Text>
-            </View>
-          )}
-        </>
-      )}
-
-      {storySubmit ? (
-        <ScrollView style={chatStyles.completionContainer}>
-          <View style={chatStyles.completionContent}>
-            <Text style={chatStyles.completionTitle}>Story Complete!</Text>
-
-            <View style={chatStyles.summaryContainer}>
-              <Text style={chatStyles.summaryTitle}>Story Summary</Text>
-              <Text style={chatStyles.summaryText}>{storySummary}</Text>
-            </View>
-
-            {imageUrl && (
-              <View style={chatStyles.imageContainer}>
-                <Text style={chatStyles.imageTitle}>Story Illustration</Text>
-                <Image
-                  source={{ uri: imageUrl }}
-                  style={chatStyles.completionImage}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
-
             {(imageGenerating || isLoading) && (
-              <View style={chatStyles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007bff" />
-                <Text style={chatStyles.loadingText}>Generating image...</Text>
+              <View style={chatStyles.hintButtonContainer}>
+                <ActivityIndicator size="small" />
+                <Text style={{ textAlign: "center" }}>Generating image…</Text>
               </View>
             )}
-
             {error && (
-              <View style={chatStyles.errorContainer}>
-                <Text style={chatStyles.errorText}>
+              <View style={chatStyles.hintButtonContainer}>
+                <Text style={{ color: "red", textAlign: "center" }}>
                   Error generating image: {error.toString()}
                 </Text>
               </View>
             )}
-          </View>
-        </ScrollView>
-      ) : (
-        <KeyboardAvoidingView
-          style={chatStyles.container}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={80}
-        >
-          <FlatList
-            data={messages.filter((msg) => msg.senderId !== "AI-summary")}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View
-                style={[
-                  chatStyles.messageBubble,
-                  item.senderId === user?.uid
-                    ? chatStyles.myMessage
-                    : chatStyles.theirMessage,
-                ]}
-              >
-                {item.imageUrl && (
+          </>
+        )}
+
+        {storySubmit ? (
+          <ScrollView style={chatStyles.completionContainer}>
+            <View style={chatStyles.completionContent}>
+              <Text style={chatStyles.completionTitle}>Story Complete!</Text>
+
+              {imageUrl && (
+                <View style={chatStyles.imageContainer}>
+                  <Text style={chatStyles.imageTitle}>Story Illustration</Text>
                   <Image
-                    source={{ uri: item.imageUrl }}
-                    style={chatStyles.messageImage}
+                    source={{ uri: imageUrl }}
+                    style={chatStyles.completionImage}
+                    resizeMode="contain"
                   />
-                )}
-                {item.text && (
-                  <Text style={chatStyles.messageText}>{item.text}</Text>
+                </View>
+              )}
+
+              <View style={chatStyles.summaryContainer}>
+                <Text style={chatStyles.summaryTitle}>Story Summary</Text>
+                <Text style={chatStyles.summaryText}>{storySummary}</Text>
+              </View>
+
+              {(imageGenerating || isLoading) && (
+                <View style={chatStyles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#007bff" />
+                  <Text style={chatStyles.loadingText}>
+                    Generating image...
+                  </Text>
+                </View>
+              )}
+
+              {error && (
+                <View style={chatStyles.errorContainer}>
+                  <Text style={chatStyles.errorText}>
+                    Error generating image: {error.toString()}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        ) : (
+          <KeyboardAvoidingView
+            style={chatStyles.container}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={80}
+          >
+            <FlatList
+              data={messages.filter((msg) => msg.senderId !== "AI-summary")}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item, index }) => {
+                const messageList = messages.filter(
+                  (msg: Message) => msg.senderId !== "AI-summary"
+                );
+                const isFirstInGroup =
+                  index === 0 ||
+                  messageList[index - 1].senderId !== item.senderId;
+
+                if (isFirstInGroup) {
+                  return (
+                    <View
+                      style={[
+                        chatStyles.messageGroup,
+                        item.senderId === user?.uid &&
+                          chatStyles.myMessageGroup,
+                      ]}
+                    >
+                      <View
+                        style={[
+                          chatStyles.messageBubble,
+                          item.senderId === user?.uid
+                            ? chatStyles.myMessage
+                            : chatStyles.theirMessage,
+                        ]}
+                      >
+                        {item.imageUrl && (
+                          <Image
+                            source={{ uri: item.imageUrl }}
+                            style={chatStyles.messageImage}
+                          />
+                        )}
+                        {item.text && (
+                          <Text
+                            style={[
+                              chatStyles.messageText,
+                              item.senderId === user?.uid
+                                ? chatStyles.myMessageText
+                                : chatStyles.theirMessageText,
+                            ]}
+                          >
+                            {item.text}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                }
+
+                return (
+                  <View
+                    style={[
+                      chatStyles.messageBubble,
+                      item.senderId === user?.uid
+                        ? chatStyles.myMessage
+                        : chatStyles.theirMessage,
+                    ]}
+                  >
+                    {item.imageUrl && (
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={chatStyles.messageImage}
+                      />
+                    )}
+                    {item.text && (
+                      <Text
+                        style={[
+                          chatStyles.messageText,
+                          item.senderId === user?.uid
+                            ? chatStyles.myMessageText
+                            : chatStyles.theirMessageText,
+                        ]}
+                      >
+                        {item.text}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              ref={flatListRef}
+              contentContainerStyle={{ paddingVertical: 12 }}
+              onContentSizeChange={() =>
+                flatListRef.current?.scrollToEnd({ animated: true })
+              }
+            />
+
+            {wordLimit != null && (
+              <Text
+                style={{
+                  textAlign: "right",
+                  marginRight: 10,
+                  color: overLimit ? "red" : "gray",
+                }}
+              >
+                {wordCount}/{wordLimit} words
+              </Text>
+            )}
+            {numberOfPages != null && (
+              <Text
+                style={{
+                  textAlign: "right",
+                  marginRight: 10,
+                  color: overPageLimit ? "red" : "gray",
+                }}
+              >
+                {textPages}/{numberOfPages} pages
+              </Text>
+            )}
+
+            {showHint && (
+              <View style={chatStyles.hintBox}>
+                <Text style={chatStyles.hintText}>{hintText}</Text>
+              </View>
+            )}
+
+            {aiAssistant && !storySubmit && (
+              <View style={chatStyles.hintButtonContainer}>
+                {loadingHint ? (
+                  <ActivityIndicator size="small" />
+                ) : (
+                  <Button
+                    title={showHint ? "Hide AI Hint" : "Get AI Hint"}
+                    onPress={() =>
+                      showHint ? setShowHint(false) : handleHint()
+                    }
+                  />
                 )}
               </View>
             )}
-            ref={flatListRef}
-            contentContainerStyle={{ paddingVertical: 12 }}
-            onContentSizeChange={() =>
-              flatListRef.current?.scrollToEnd({ animated: true })
-            }
-          />
 
-          {wordLimit != null && (
-            <Text
-              style={{
-                textAlign: "right",
-                marginRight: 10,
-                color: overLimit ? "red" : "gray",
-              }}
-            >
-              {wordCount}/{wordLimit} words
-            </Text>
-          )}
-          {numberOfPages != null && (
-            <Text
-              style={{
-                textAlign: "right",
-                marginRight: 10,
-                color: overPageLimit ? "red" : "gray",
-              }}
-            >
-              {textPages}/{numberOfPages} pages
-            </Text>
-          )}
-
-          {showHint && (
-            <View style={chatStyles.hintBox}>
-              <Text style={chatStyles.hintText}>{hintText}</Text>
+            <View style={chatStyles.inputContainer}>
+              <TextInput
+                placeholder="Write your turn..."
+                value={input}
+                onChangeText={(t) => {
+                  setInput(t);
+                  setComposerText(t);
+                }}
+                style={chatStyles.input}
+                multiline
+                editable={!storySubmit}
+              />
+              <TouchableOpacity
+                onPress={handleSend}
+                disabled={overLimit || overPageLimit || storySubmit}
+                style={[
+                  chatStyles.sendButton,
+                  (overLimit || overPageLimit || storySubmit) && {
+                    backgroundColor: "#ccc",
+                  },
+                ]}
+              >
+                <Text style={chatStyles.sendText}>Send</Text>
+              </TouchableOpacity>
             </View>
-          )}
-
-          {aiAssistant && !storySubmit && (
-            <View style={chatStyles.hintButtonContainer}>
-              {loadingHint ? (
-                <ActivityIndicator size="small" />
-              ) : (
-                <Button
-                  title={showHint ? "Hide AI Hint" : "Get AI Hint"}
-                  onPress={() => (showHint ? setShowHint(false) : handleHint())}
-                />
-              )}
-            </View>
-          )}
-
-          <View style={chatStyles.inputContainer}>
-            <TextInput
-              placeholder="Write your turn..."
-              value={input}
-              onChangeText={(t) => {
-                setInput(t);
-                setComposerText(t);
-              }}
-              style={chatStyles.input}
-              multiline
-              editable={!storySubmit}
-            />
-            <TouchableOpacity
-              onPress={handleSend}
-              disabled={overLimit || overPageLimit || storySubmit}
-              style={[
-                chatStyles.sendButton,
-                (overLimit || overPageLimit || storySubmit) && {
-                  backgroundColor: "#ccc",
-                },
-              ]}
-            >
-              <Text style={chatStyles.sendText}>Send</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      )}
-    </View>
+          </KeyboardAvoidingView>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 

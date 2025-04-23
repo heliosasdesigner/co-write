@@ -14,7 +14,16 @@ import Chat2 from "../screens/Chat2";
 export type ChatsFlowParamList = {
   "Story Rooms": undefined;
   Profile: undefined;
-  "New Story": undefined;
+  "New Story": {
+    onCreateChat: (
+      otherUserId: string,
+      aiAssistant: boolean,
+      title: string,
+      topic: string,
+      wordLimit: number,
+      numberOfPages?: string
+    ) => void;
+  };
   Chat2: {
     chatId: string;
     topic?: string;

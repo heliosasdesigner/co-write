@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   collection,
   query,
@@ -16,11 +17,19 @@ import { db, auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
 import { chatListStyles } from "../styles";
 
-import NewChatModal from "./Chat2NewChat";
-
 type RootStackParamList = {
   ChatScreen: { chatId: string };
   ChatList: undefined;
+  "New Story": {
+    onCreateChat: (
+      otherUserId: string,
+      aiAssistant: boolean,
+      title: string,
+      topic: string,
+      wordLimit: number,
+      numberOfPages?: string
+    ) => void;
+  };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "ChatScreen">;
@@ -38,9 +47,17 @@ type Chat = {
   numberOfPages?: number;
 };
 
+const EmptyState = () => (
+  <View style={chatListStyles.emptyContainer}>
+    <Ionicons name="book-outline" size={48} color="#666" />
+    <Text style={chatListStyles.emptyText}>
+      No stories yet. Start a new story by tapping the button below!
+    </Text>
+  </View>
+);
+
 const ChatListScreen = () => {
   const [chats, setChats] = useState<Chat[]>([]);
-  const [showModal, setShowModal] = useState(false);
   const navigation = useNavigation<NavigationProp>();
 
   const user = auth.currentUser;
@@ -109,12 +126,12 @@ const ChatListScreen = () => {
       style={chatListStyles.chatItem}
       onPress={() => navigation.navigate("ChatScreen", { chatId: item.id })}
     >
-      <Text style={chatListStyles.chatUser}>{item.otherUser}</Text>
-      {item.topic && (
-        <Text style={chatListStyles.topic}>Topic: {item.topic}</Text>
-      )}
-      <Text style={chatListStyles.lastMessage} numberOfLines={1}>
-        {item.lastMessage || "Start the story..."}
+      <Text style={chatListStyles.chatUser}>
+        {item.title || "Untitled Story"}
+      </Text>
+      {item.topic && <Text style={chatListStyles.topic}>{item.topic}</Text>}
+      <Text style={chatListStyles.lastMessage} numberOfLines={2}>
+        {item.lastMessage || "Start writing your story..."}
       </Text>
     </TouchableOpacity>
   );
@@ -126,20 +143,24 @@ const ChatListScreen = () => {
           data={chats}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          ListEmptyComponent={EmptyState}
+          contentContainerStyle={{ flexGrow: 1 }}
         />
 
         <TouchableOpacity
-          onPress={() => setShowModal(true)}
+          onPress={() =>
+            navigation.navigate("New Story", { onCreateChat: handleCreateChat })
+          }
           style={chatListStyles.newChatButton}
         >
-          <Text style={chatListStyles.buttonText}>+ New Chat</Text>
+          <Ionicons
+            name="add"
+            size={20}
+            color="#fff"
+            style={{ marginRight: 4 }}
+          />
+          <Text style={chatListStyles.buttonText}>New Story</Text>
         </TouchableOpacity>
-
-        <NewChatModal
-          visible={showModal}
-          onClose={() => setShowModal(false)}
-          onCreateChat={handleCreateChat}
-        />
       </View>
     </PageLayout>
   );
