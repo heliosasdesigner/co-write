@@ -6,7 +6,7 @@ import PageLayout from "../components/PageLayout";
 import OpenRouter from "../components/OpenRouter";
 import ExampleImageGeneration from "../components/ExampleImageGeneration";
 import ExampleResponseStream from "../components/ExampleResponseStream";
-import { getUserStories, Story } from "../../api/stories";
+import { getUserStories, Story } from "../api/stories";
 import { getUsersByUsername } from "../../api/users";
 import { auth } from "../../firebase/config";
 import { AuthenticatedUserContext } from "../contexts/AuthenticatedUser";

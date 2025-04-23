@@ -8,8 +8,8 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { createStory, createInitialChat } from "../api/stories";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { createStory, createInitialChat } from "../../api/stories";
 import { auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
 import { RootStackParamList } from "../types/navigation";

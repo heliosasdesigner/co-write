@@ -21,7 +21,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
-import { getStoryChats, addChatMessage, ChatMessage } from "../../api/stories";
+import { getStoryChats, addChatMessage, ChatMessage } from "../api/stories";
 import { chatStyles, pageLayoutStyles } from "../styles";
 
 type ChatScreenRouteProp = RouteProp<RootStackParamList, "Chat">;
