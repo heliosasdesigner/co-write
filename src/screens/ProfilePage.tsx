@@ -32,7 +32,7 @@ const ProfilePage = () => {
 
   const sortedStories = [...stories].sort((a, b) => {
     if (filter === "az") {
-      return a.title.localeCompare(b.title);
+      return (a.title || "").localeCompare(b.title || "");
     } else {
       return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
     }
@@ -64,7 +64,7 @@ const ProfilePage = () => {
             keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={({ item, index }) => (
                 <Text style={styles.storyItem}>
-                  {index + 1}. {item.title}
+                  {index + 1}. {item.title || "Untitled Story"}
                 </Text>
             )}
             ListEmptyComponent={
@@ -135,3 +135,4 @@ const styles = StyleSheet.create({
 });
 
 export default ProfilePage;
+
