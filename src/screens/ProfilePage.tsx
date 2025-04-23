@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, StyleSheet, FlatList, Platform } from "react-native";
+
+
 import { Picker } from "@react-native-picker/picker";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase/config";
@@ -43,67 +45,109 @@ const ProfilePage = () => {
 
   const sortedStories = [...stories].sort((a, b) => {
     if (filter === "az") {
-      return a.title.localeCompare(b.title);
+      return (a.title || "").localeCompare(b.title || "");
     } else {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
     }
   });
 
   return (
-    <PageLayout currentTab="Profile">
-      <View style={storyRoomsStyles.header}>
-        <Text style={storyRoomsStyles.headerTitle}>Profile</Text>
-      </View>
+      <PageLayout currentTab="Profile" scrollable={true}>
+        <Text style={styles.avatar}>👤</Text>
+        <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
+        <Text style={styles.bio}>Short Bio (optional)</Text>
 
-      <View style={storyRoomsStyles.roomItem}>
-        <Text style={authStyles.title}>👤</Text>
-        <Text style={storyRoomsStyles.roomTitle}>
-          {user?.email || "Username Placeholder"}
-        </Text>
-        <Text style={storyRoomsStyles.roomDescription}>
-          Short Bio (optional)
-        </Text>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginVertical: 10,
-          }}
-        >
-          <Text style={storyRoomsStyles.roomTitle}>Filter:</Text>
-          <Picker
-            selectedValue={filter}
-            style={{ flex: 1, height: 40 }}
-            onValueChange={(itemValue) => setFilter(itemValue)}
-          >
-            <Picker.Item label="Date Made" value="date" />
-            <Picker.Item label="A - Z" value="az" />
-          </Picker>
+        <View style={styles.pickerWrapper}>
+          <Text style={styles.filterLabel}>Filter:</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+                selectedValue={filter}
+                onValueChange={(itemValue) => setFilter(itemValue)}
+                dropdownIconColor="#000"
+                mode={Platform.OS === "ios" ? "dropdown" : "dialog"} // helpful for iOS
+            >
+              <Picker.Item label="Date Made" value="date" />
+              <Picker.Item label="A - Z" value="az" />
+            </Picker>
+          </View>
         </View>
 
-        <Text style={storyRoomsStyles.roomTitle}>PAST STORIES</Text>
+        <Text style={styles.sectionTitle}>PAST STORIES</Text>
         <FlatList
-          data={sortedStories}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item, index }) => (
-            <View style={storyRoomsStyles.roomItem}>
-              <Text style={storyRoomsStyles.roomTitle}>
-                {index + 1}. {item.title}
-              </Text>
-            </View>
-          )}
-          ListEmptyComponent={
-            <View style={storyRoomsStyles.emptyState}>
-              <Text style={storyRoomsStyles.emptyStateText}>
-                No stories found.
-              </Text>
-            </View>
-          }
+            data={sortedStories}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
+            renderItem={({ item, index }) => (
+                <Text style={styles.storyItem}>
+                  {index + 1}. {item.title || "Untitled Story"}
+                </Text>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No stories found.</Text>
+            }
+
         />
       </View>
     </PageLayout>
   );
 };
+
+const styles = StyleSheet.create({
+  avatar: {
+    fontSize: 50,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  username: {
+    fontSize: 18,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  bio: {
+    textAlign: "center",
+    fontStyle: "italic",
+    color: "#888",
+    marginBottom: 20,
+  },
+  pickerWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    zIndex: 10,
+    elevation: 10,
+    position: "relative",
+  },
+  filterLabel: {
+    marginRight: 10,
+  },
+  pickerContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    overflow: "hidden",
+    zIndex: 20,
+  },
+  sectionTitle: {
+    fontWeight: "bold",
+    marginBottom: 8,
+    paddingHorizontal: 10,
+  },
+  storyItem: {
+    padding: 10,
+    backgroundColor: "#fff",
+    marginBottom: 6,
+    marginHorizontal: 10,
+    borderRadius: 6,
+    borderColor: "#ddd",
+    borderWidth: 1,
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#999",
+    marginTop: 20,
+  },
+});
 
 export default ProfilePage;
