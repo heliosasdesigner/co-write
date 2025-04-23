@@ -41,11 +41,17 @@ type Message = {
   timestamp: any;
 };
 
+type AIResponse = {
+  role: string;
+  content: string;
+};
+
 const ChatScreen = () => {
   const route = useRoute<ChatScreenRouteProp>();
-  const { chatId } = route.params;
+  const { chatId, otherUserId } = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [AIResponse, setAIResponse] = useState<AIResponse[]>([]);
   const [wordLimit, setWordLimit] = useState<number | null>(null);
   const [numberOfPages, setNumberOfPages] = useState<number | null>(null);
   const [composerText, setComposerText] = useState("");
@@ -54,7 +60,6 @@ const ChatScreen = () => {
   const [loadingHint, setLoadingHint] = useState(false);
   const [aiAssistant, setAiAssistant] = useState(true);
   const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
 
   // const [searchQuery, setSearchQuery] = useState("");
   const flatListRef = useRef<FlatList>(null);
@@ -129,47 +134,70 @@ const ChatScreen = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    try {
-      console.log("Sending prompt:", prompt);
-      const newResponse = await chatWithLLM(prompt);
-      console.log("!!!!chatWithLLM returned:", newResponse);
-      const messageFromLLM = {
-        text: newResponse.trim(),
-        senderId: "AI",
-        timestamp: serverTimestamp(),
-      };
-      setResponse(newResponse);
-    } catch (error) {
-      console.error("Error in handleSubmit:", error);
-      setResponse("Error: " + (error as Error).message);
-    }
-  };
+  // const handleSubmit = async () => {
+  //   try {
+  //     console.log("Sending prompt:", prompt);
+  //     const newResponse = await chatWithLLM(prompt);
+  //     console.log("!!!!chatWithLLM returned:", newResponse);
+  //     const messageFromLLM = {
+  //       text: newResponse.trim(),
+  //       senderId: "AI",
+  //       timestamp: serverTimestamp(),
+  //     };
+  //     setResponse(newResponse);
+  //   } catch (error) {
+  //     console.error("Error in handleSubmit:", error);
+  //     setResponse("Error: " + (error as Error).message);
+  //   }
+  // };
 
   const handleSend = async () => {
     if (!input.trim() || !user || overLimit) return;
     try {
+      console.log(input, "<<<<<input");
       console.log("Sending prompt:", prompt);
-      const newResponse = await chatWithLLM(prompt);
-      console.log("!!!!chatWithLLM returned:", newResponse);
-      const messageFromLLM = {
-        text: newResponse.trim(),
-        senderId: "",
-        timestamp: serverTimestamp(),
-      };
-      setResponse(newResponse);
+      console.log(messages, "<<<<<messages");
+      messages.map((message) => {
+        console.log(message, "<<<<<message");
+        const { senderId, text } = message;
+        if (senderId === user.uid) {
+          setAIResponse((prev) => [...prev, { role: "user", content: text }]);
+        } else {
+          setAIResponse((prev) => [
+            ...prev,
+            { role: "assistant", content: text },
+          ]);
+        }
+
+        // AIResponse = [{role: "user", content: text}, {role: "user", content: text]
+      });
+      console.log(AIResponse, "<<<<<AIResponse");
+      const newResponse = await chatWithLLM(AIResponse);
+      console.log(newResponse, "<<<<<newResponse");
+
+      setAIResponse([
+        ...AIResponse,
+        { role: "assistant", content: newResponse },
+      ]);
     } catch (error) {
       console.error("Error in handleSubmit:", error);
-      setResponse("Error: " + (error as Error).message);
-    }
-    if (messageFromLLM.senderId === "AI") {
+      setAIResponse("Error: " + (error as Error).message);
     }
 
-    const messageData = {
-      text: input.trim(),
-      senderId: user.uid,
-      timestamp: serverTimestamp(),
-    };
+    let messageData;
+    if (AIResponse.length !== 0) {
+      messageData = {
+        text: newResponse.content.trim(),
+        senderId: "AI",
+        timestamp: serverTimestamp(),
+      };
+    } else {
+      messageData = {
+        text: input.trim(),
+        senderId: user.uid,
+        timestamp: serverTimestamp(),
+      };
+    }
 
     await addDoc(collection(db, "chats", chatId, "messages"), messageData);
     await updateDoc(doc(db, "chats", chatId), {
@@ -178,6 +206,7 @@ const ChatScreen = () => {
     });
 
     setInput("");
+    setAIResponse([]);
     flatListRef.current?.scrollToEnd({ animated: true });
   };
 

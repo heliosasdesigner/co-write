@@ -41,6 +41,16 @@ const NewChatModal: React.FC<Props> = ({ visible, onClose, onCreateChat }) => {
   const [aiAssistant, setaiAssistant] = useState(false);
   const [numberOfPages, setNumberOfPages] = useState("");
   const [title, setTitle] = useState("");
+  const [isAI, setIsAI] = useState(false);
+
+  const handleUserTypeChange = (value: boolean) => {
+    setIsAI(value);
+    if (value) {
+      setOtherUserId("AI");
+    } else {
+      setOtherUserId("");
+    }
+  };
 
   const handleCreate = () => {
     const limit = parseInt(wordLimit);
@@ -59,6 +69,7 @@ const NewChatModal: React.FC<Props> = ({ visible, onClose, onCreateChat }) => {
     setTopic("");
     setWordLimit("");
     setNumberOfPages("");
+    setIsAI(false);
     onClose();
   };
 
@@ -67,11 +78,16 @@ const NewChatModal: React.FC<Props> = ({ visible, onClose, onCreateChat }) => {
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <Text style={styles.title}>New Chat</Text>
+          <View style={styles.toggleContainer}>
+            <Text>User Type: {isAI ? "AI" : "Other"}</Text>
+            <Switch value={isAI} onValueChange={handleUserTypeChange} />
+          </View>
           <TextInput
             placeholder="Other User ID"
             value={otherUserId}
             onChangeText={setOtherUserId}
             style={styles.input}
+            editable={!isAI}
           />
           <Text>AI Assistant?</Text>
           <Switch value={aiAssistant} onValueChange={setaiAssistant} />
@@ -154,5 +170,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 6,
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingVertical: 8,
   },
 });

@@ -17,20 +17,19 @@ const client = new OpenAI({
   },
 });
 
+type AIResponse = {
+  role: string;
+  content: string;
+};
+
 // Response from Openrouter API (non streaming)
-export const chatWithLLM = async (prompt: string): Promise<string> => {
+export const chatWithLLM = async (prompt: AIResponse[]): Promise<string> => {
   console.log("chatWithLLM called with prompt:", prompt);
   const completion = await client.chat.completions.create({
     model: "meta-llama/llama-4-maverick:free",
-    messages: [
-      {
-        role: "user",
-
-        content: prompt,
-      },
-    ],
+    messages: prompt,
   });
 
-  //console.log(completion.choices[0].message.content);
+  console.log(completion.choices[0].message.content);
   return completion.choices[0].message.content || "";
 };

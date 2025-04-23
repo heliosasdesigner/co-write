@@ -43,7 +43,6 @@ const ChatListScreen = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const user = auth.currentUser;
-  console.log(user, "<<<< User");
   useEffect(() => {
     if (!user) return;
 
