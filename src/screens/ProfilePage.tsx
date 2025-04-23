@@ -39,7 +39,6 @@ const ProfilePage = () => {
   });
 
   return (
-      // Use PageLayout's scrollable and avoid nesting FlatList inside ScrollView
       <PageLayout currentTab="Profile" scrollable={true}>
         <Text style={styles.avatar}>👤</Text>
         <Text style={styles.username}>{user?.email || "Username Placeholder"}</Text>
@@ -69,9 +68,7 @@ const ProfilePage = () => {
                 </Text>
             )}
             ListEmptyComponent={
-              <Text style={{ textAlign: "center", color: "#999", marginTop: 20 }}>
-                No stories found.
-              </Text>
+              <Text style={styles.emptyText}>No stories found.</Text>
             }
         />
       </PageLayout>
@@ -110,6 +107,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 6,
+    position: "relative",
+    zIndex: 999,
   },
   sectionTitle: {
     fontWeight: "bold",
@@ -125,6 +124,12 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderWidth: 1,
   },
+  emptyText: {
+    textAlign: "center",
+    color: "#999",
+    marginTop: 20,
+  },
 });
 
 export default ProfilePage;
+
