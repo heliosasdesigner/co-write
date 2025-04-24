@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import {
   collection,
   query,
@@ -20,12 +15,21 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
-
-import NewChatModal from "./Chat2NewChat";
+import { chatListStyles, headerStyles, storyRoomsStyles } from "../styles";
 
 type RootStackParamList = {
   ChatScreen: { chatId: string };
   ChatList: undefined;
+  "New Story": {
+    onCreateChat: (
+      otherUserId: string,
+      aiAssistant: boolean,
+      title: string,
+      topic: string,
+      wordLimit: number,
+      numberOfPages?: string
+    ) => void;
+  };
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "ChatScreen">;
@@ -41,11 +45,20 @@ type Chat = {
   aiAssistant?: boolean;
   wordLimit?: number;
   numberOfPages?: number;
+  isFinished?: boolean;
 };
+
+const EmptyState = () => (
+  <View style={chatListStyles.emptyContainer}>
+    <Ionicons name="book-outline" size={48} color="#666" />
+    <Text style={chatListStyles.emptyText}>
+      No stories yet. Start a new story by tapping the button below!
+    </Text>
+  </View>
+);
 
 const ChatListScreen = () => {
   const [chats, setChats] = useState<Chat[]>([]);
-  const [showModal, setShowModal] = useState(false);
   const navigation = useNavigation<NavigationProp>();
 
   const user = auth.currentUser;
@@ -72,6 +85,7 @@ const ChatListScreen = () => {
           aiAssistant: data.aiAssistant,
           wordLimit: data.wordLimit,
           numberOfPages: data.numberOfPages,
+          isFinished: data.isFinished || false,
         };
       });
       setChats(chatList);
@@ -104,6 +118,7 @@ const ChatListScreen = () => {
       numberOfPages: numberOfPages ? parseInt(numberOfPages) : null,
       lastMessage: "",
       lastMessageTimestamp: serverTimestamp(),
+      isFinished: false,
     });
 
     navigation.navigate("ChatScreen", { chatId });
@@ -111,76 +126,73 @@ const ChatListScreen = () => {
 
   const renderItem = ({ item }: { item: Chat }) => (
     <TouchableOpacity
-      style={styles.chatItem}
+      style={[chatListStyles.chatItem, storyRoomsStyles.roomItem]}
       onPress={() => navigation.navigate("ChatScreen", { chatId: item.id })}
     >
-      <Text style={styles.chatUser}>{item.otherUser}</Text>
-      {item.topic && <Text style={styles.topic}>Topic: {item.topic}</Text>}
-      <Text style={styles.lastMessage} numberOfLines={1}>
-        {item.lastMessage || "Start the story..."}
+      <View style={chatListStyles.chatHeader}>
+        <Text style={[chatListStyles.chatUser, storyRoomsStyles.roomTitle]}>
+          {item.title || "Untitled Story"}
+        </Text>
+        {item.isFinished && (
+          <View style={chatListStyles.completionTag}>
+            <Text style={chatListStyles.completionTagText}>Completed</Text>
+          </View>
+        )}
+      </View>
+      {item.topic && (
+        <Text style={[chatListStyles.topic, storyRoomsStyles.roomDescription]}>
+          {item.topic}
+        </Text>
+      )}
+      <Text
+        style={[chatListStyles.lastMessage, storyRoomsStyles.roomMetaText]}
+        numberOfLines={2}
+      >
+        {item.lastMessage || "Start writing your story..."}
       </Text>
     </TouchableOpacity>
   );
 
   return (
-    <PageLayout currentTab="ChatList">
-      <View style={styles.container}>
+    <PageLayout currentTab="Story Rooms">
+      <View style={[headerStyles.header, storyRoomsStyles.header]}>
+        <Text style={[headerStyles.title, storyRoomsStyles.headerTitle]}>
+          Story Rooms
+        </Text>
+      </View>
+      <View style={[chatListStyles.container, storyRoomsStyles.container]}>
         <FlatList
           data={chats}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
+          ListEmptyComponent={EmptyState}
+          contentContainerStyle={{ flexGrow: 1 }}
         />
 
         <TouchableOpacity
-          onPress={() => setShowModal(true)}
-          style={styles.newChatButton}
+          onPress={() =>
+            navigation.navigate("New Story", { onCreateChat: handleCreateChat })
+          }
+          style={[chatListStyles.newChatButton, storyRoomsStyles.createButton]}
         >
-          <Text style={styles.buttonText}>+ New Chat</Text>
+          <Ionicons
+            name="add"
+            size={20}
+            color="#fff"
+            style={{ marginRight: 4 }}
+          />
+          <Text
+            style={[chatListStyles.buttonText, storyRoomsStyles.buttonText]}
+          >
+            New Story
+          </Text>
         </TouchableOpacity>
-
-        <NewChatModal
-          visible={showModal}
-          onClose={() => setShowModal(false)}
-          onCreateChat={handleCreateChat}
-        />
       </View>
     </PageLayout>
   );
 };
 
 export default ChatListScreen;
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  chatItem: {
-    padding: 16,
-    backgroundColor: "#f6f6f6",
-    borderBottomColor: "#ddd",
-    borderBottomWidth: 1,
-  },
-  chatUser: {
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  topic: {
-    color: "#555",
-    fontStyle: "italic",
-  },
-  lastMessage: {
-    color: "#555",
-    marginTop: 4,
-  },
-  newChatButton: {
-    backgroundColor: "#007bff",
-    padding: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-});
 
 /*
     setup with navigator

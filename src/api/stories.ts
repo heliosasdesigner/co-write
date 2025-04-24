@@ -29,26 +29,30 @@ export interface Story {
   pageLimit?: string;
 }
 
-export const getStories = async (): Promise<Story[]> => {
-  const storiesCollection = collection(db, "stories");
-  const storiesSnapshot = await getDocs(storiesCollection);
-  return storiesSnapshot.docs.map((doc) => ({
+export const getStories = async (): Promise<ChatMessage[]> => {
+  const chatsCollection = collection(db, "chats");
+  const q = query(chatsCollection, orderBy("createdAt", "asc"));
+  const chatsSnapshot = await getDocs(q);
+  return chatsSnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as Story[];
+  })) as ChatMessage[];
 };
 
-export const getUserStories = async (username: string): Promise<Story[]> => {
-  const storiesCollection = collection(db, "stories");
+export const getUserStories = async (
+  username: string
+): Promise<ChatMessage[]> => {
+  const chatsCollection = collection(db, "chats");
   const q = query(
-    storiesCollection,
-    where("joinUser", "array-contains", username)
+    chatsCollection,
+    where("user._id", "==", username),
+    orderBy("createdAt", "asc")
   );
-  const storiesSnapshot = await getDocs(q);
-  return storiesSnapshot.docs.map((doc) => ({
+  const chatsSnapshot = await getDocs(q);
+  return chatsSnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as Story[];
+  })) as ChatMessage[];
 };
 
 export type NewStory = Omit<Story, "id" | "createdAt">;

@@ -1,74 +1,120 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, View, Text } from "react-native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import Header from "../components/Header";
 import StoryCard from "../components/StoryCard";
 import PageLayout from "../components/PageLayout";
-import { landingStyles } from "../styles";
+import { landingStyles, headerStyles } from "../styles";
 
-interface Story {
+interface Chat {
   id: string;
   topic: string;
   createdAt: Date;
-  video?: string;
+  image?: string;
+  userId: string;
+  title: string;
+  lastMessage: string;
+  lastMessageTimestamp: Date;
+  isFinished: boolean;
+  wordLimit: number;
+  votes: number;
   [key: string]: any;
 }
 import { getAuth } from "firebase/auth";
 
 const LandingPage = () => {
-  const [stories, setStories] = useState<Story[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
 
   useEffect(() => {
-    const fetchStories = async () => {
+    const fetchChats = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "stories"));
+        const q = query(collection(db, "chats"));
 
-        const data = querySnapshot.docs.map((doc) => {
-          const storyData = doc.data();
+        const querySnapshot = await getDocs(q);
+        console.log("Total chats fetched:", querySnapshot.docs.length);
 
-          return {
-            id: doc.id,
-            userId: storyData.userId || "",
-            topic: storyData.topic,
-            video: storyData.video,
-            votes: storyData.votes,
-            createdAt: storyData.createdAt?.toDate
-              ? storyData.createdAt.toDate()
-              : storyData.createdAt,
-          };
-        });
+        const data = querySnapshot.docs
+          .map((doc) => {
+            const chatData = doc.data();
+            console.log("Chat data:", {
+              id: doc.id,
+              isFinished: chatData.isFinished,
+              hasImage: !!chatData.image,
+              title: chatData.title,
+              topic: chatData.topic,
+            });
+            return {
+              id: doc.id,
+              userId: chatData.userId || "",
+              topic: chatData.topic,
+              image: chatData.image,
+              title: chatData.title,
+              lastMessage: chatData.lastMessage,
+              lastMessageTimestamp: chatData.lastMessageTimestamp?.toDate
+                ? chatData.lastMessageTimestamp.toDate()
+                : chatData.lastMessageTimestamp,
+              isFinished: chatData.isFinished || false,
+              wordLimit: chatData.wordLimit || 100,
+              votes: chatData.votes || 0,
+              createdAt: chatData.createdAt?.toDate
+                ? chatData.createdAt.toDate()
+                : chatData.createdAt,
+            };
+          })
+          .filter((chat) => {
+            const shouldShow = chat.isFinished && chat.image;
+            console.log("Filtering chat:", {
+              id: chat.id,
+              isFinished: chat.isFinished,
+              hasImage: !!chat.image,
+              shouldShow,
+            });
+            return shouldShow;
+          });
 
-        setStories(data);
+        console.log("Filtered chats:", data.length);
+        setChats(data);
       } catch (error: unknown) {
-        console.error("Error fetching stories:", error);
+        console.error("Error fetching chats:", error);
       }
     };
 
-    fetchStories();
+    fetchChats();
   }, []);
 
   return (
     <PageLayout currentTab="Home" scrollable>
-      <Header />
+      <View style={headerStyles.header}>
+        <Text style={headerStyles.title}>Home</Text>
+      </View>
 
       <ScrollView contentContainerStyle={landingStyles.grid}>
-        {stories.length === 0 ? (
+        {chats.length === 0 ? (
           <View style={landingStyles.emptyState}>
-            <Text style={landingStyles.emptyStateText}>No stories found</Text>
+            <Text style={landingStyles.emptyStateText}>
+              No completed stories found
+            </Text>
           </View>
         ) : (
-          stories.map((story) => (
-            <View key={story.id} style={landingStyles.cardWrapper}>
+          chats.map((chat) => (
+            <View key={chat.id} style={landingStyles.cardWrapper}>
               <StoryCard
-                topic={story.topic}
-                createdAt={story.createdAt}
-                video={story.video}
+                id={chat.id}
+                userId={chat.userId}
+                topic={chat.topic}
+                createdAt={chat.createdAt}
+                image={chat.image}
+                title={chat.title}
+                lastMessage={chat.lastMessage}
+                lastMessageTimestamp={chat.lastMessageTimestamp}
+                isFinished={chat.isFinished}
+                wordLimit={chat.wordLimit}
+                votes={chat.votes}
               />
             </View>
           ))
         )}
-
       </ScrollView>
     </PageLayout>
   );

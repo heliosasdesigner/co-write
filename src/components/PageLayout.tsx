@@ -8,6 +8,21 @@ type RootStackParamList = {
   "New Story": undefined;
   "Story Rooms": undefined;
   Profile: undefined;
+  "Chat List": undefined;
+  Chats: undefined;
+  StoryDetails: {
+    id: string;
+    userId: string;
+    topic: string;
+    title: string;
+    createdAt: any;
+    image?: string;
+    lastMessage: string;
+    lastMessageTimestamp: any;
+    isFinished: boolean;
+    wordLimit: number;
+    votes: number;
+  };
 };
 
 type PageLayoutProps = {
@@ -34,10 +49,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e6f0fa",
+    backgroundColor: "#fff",
   },
   content: {
     flex: 1,
@@ -48,4 +64,5 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
 });
+
 export default PageLayout;

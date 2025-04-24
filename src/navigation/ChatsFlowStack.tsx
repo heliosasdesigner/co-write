@@ -6,17 +6,26 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
 // Components
-import NewStoryPage from "../screens/NewStoryPage";
-import Chat from "../screens/Chat";
-import StoryRoomsPage from "../screens/StoryRoomsPage";
+import Chat2NewChat from "../screens/Chat2NewChat";
+import Chat2List from "../screens/Chat2List";
+import Chat2 from "../screens/Chat2";
 
 // Define the chat flow navigation parameter list
 export type ChatsFlowParamList = {
   "Story Rooms": undefined;
   Profile: undefined;
-  NewStory: undefined;
-  Chat: {
-    storyId: string;
+  "New Story": {
+    onCreateChat: (
+      otherUserId: string,
+      aiAssistant: boolean,
+      title: string,
+      topic: string,
+      wordLimit: number,
+      numberOfPages?: string
+    ) => void;
+  };
+  Chat2: {
+    chatId: string;
     topic?: string;
     title?: string;
     aiAssistant?: boolean;
@@ -51,22 +60,22 @@ const ChatsFlowStack: React.FC = () => {
       >
         <Stack.Screen
           name="Story Rooms"
-          component={StoryRoomsPage}
+          component={Chat2List}
           options={{
             headerTitle: "Story Rooms",
           }}
         />
         <Stack.Screen
-          name="NewStory"
-          component={NewStoryPage}
+          name="New Story"
+          component={Chat2NewChat}
           options={{
             headerTitle: "Create Story",
             headerBackTitle: "Back",
           }}
         />
         <Stack.Screen
-          name="Chat"
-          component={Chat}
+          name="Chat2"
+          component={Chat2}
           options={{
             headerTitle: "Story Chat",
             headerLeft: () => (
