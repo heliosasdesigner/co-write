@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
@@ -126,136 +127,153 @@ const NewChatPage: React.FC = () => {
 
   return (
     <SafeAreaView style={[newChatModalStyles.container, { flex: 1 }]}>
-      <View style={newChatModalStyles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={newChatModalStyles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color="#007AFF" />
-          <Text style={newChatModalStyles.backButtonText}>Story Rooms</Text>
-        </TouchableOpacity>
-        <Text style={newChatModalStyles.headerTitle}>Create Story</Text>
-      </View>
-
-      <ScrollView
-        style={newChatModalStyles.content}
-        bounces={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
-        <Text style={newChatModalStyles.title}>New Co-Write Story</Text>
-
-        <Text style={newChatModalStyles.label}>Writing Mode *</Text>
-        <View style={newChatModalStyles.pickerContainer}>
-          <Picker
-            selectedValue={mode}
-            onValueChange={(itemValue) => setMode(itemValue)}
-            style={newChatModalStyles.picker}
-            itemStyle={{ fontSize: 17, color: "#333", height: 50 }}
+        <View style={newChatModalStyles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={newChatModalStyles.backButton}
           >
-            {STORY_MODES.map((m) => (
-              <Picker.Item
-                key={m.id}
-                label={m.label}
-                value={m.value}
-                color={mode === m.value ? "#007AFF" : "#333"}
-              />
-            ))}
-          </Picker>
+            <Ionicons name="chevron-back" size={24} color="#007AFF" />
+            <Text style={newChatModalStyles.backButtonText}>Story Rooms</Text>
+          </TouchableOpacity>
+          <Text style={newChatModalStyles.headerTitle}>Create Story</Text>
         </View>
 
-        {mode === "user" && (
-          <>
-            <Text style={newChatModalStyles.label}>Other User ID *</Text>
+        <ScrollView
+          style={newChatModalStyles.content}
+          bounces={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={newChatModalStyles.title}>New Co-Write Story</Text>
+
+          <Text style={newChatModalStyles.label}>Writing Mode *</Text>
+          <View style={newChatModalStyles.pickerContainer}>
+            <Picker
+              selectedValue={mode}
+              onValueChange={(itemValue) => setMode(itemValue)}
+              style={newChatModalStyles.picker}
+              itemStyle={{ fontSize: 17, color: "#333", height: 50 }}
+            >
+              {STORY_MODES.map((m) => (
+                <Picker.Item
+                  key={m.id}
+                  label={m.label}
+                  value={m.value}
+                  color={mode === m.value ? "#007AFF" : "#333"}
+                />
+              ))}
+            </Picker>
+          </View>
+
+          {mode === "user" && (
+            <>
+              <Text style={newChatModalStyles.label}>Other User ID *</Text>
+              <TextInput
+                placeholder="Enter user ID"
+                value={otherUserId}
+                onChangeText={setOtherUserId}
+                style={newChatModalStyles.input}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </>
+          )}
+
+          <Text style={newChatModalStyles.label}>Story Title *</Text>
+          <TextInput
+            placeholder="Enter your story title"
+            value={title}
+            onChangeText={setTitle}
+            style={newChatModalStyles.input}
+            keyboardType="default"
+            autoCapitalize="words"
+            autoCorrect={true}
+          />
+
+          <Text style={newChatModalStyles.label}>Story Topic *</Text>
+          <View style={newChatModalStyles.pickerContainer}>
+            <Picker
+              selectedValue={topic}
+              onValueChange={(itemValue) => setTopic(itemValue)}
+              style={newChatModalStyles.picker}
+              itemStyle={{ fontSize: 17, color: "#333", height: 50 }}
+            >
+              {STORY_TOPICS.map((t) => (
+                <Picker.Item
+                  key={t}
+                  label={t}
+                  value={t}
+                  color={topic === t ? "#007AFF" : "#333"}
+                />
+              ))}
+            </Picker>
+          </View>
+
+          <Text style={newChatModalStyles.label}>Word Limit per Page *</Text>
+          <View style={newChatModalStyles.inputWithHelper}>
             <TextInput
-              placeholder="Enter user ID"
-              value={otherUserId}
-              onChangeText={setOtherUserId}
-              style={newChatModalStyles.input}
+              placeholder="Enter word limit"
+              value={wordLimit}
+              onChangeText={handleWordLimitChange}
+              style={[newChatModalStyles.input, newChatModalStyles.numberInput]}
+              keyboardType="number-pad"
+              maxLength={3}
             />
-          </>
-        )}
+            <Text style={newChatModalStyles.helperText}>
+              Default: 100 (Max: 500)
+            </Text>
+          </View>
 
-        <Text style={newChatModalStyles.label}>Story Title *</Text>
-        <TextInput
-          placeholder="Enter your story title"
-          value={title}
-          onChangeText={setTitle}
-          style={newChatModalStyles.input}
-        />
+          <Text style={newChatModalStyles.label}>Number of Pages *</Text>
+          <View style={newChatModalStyles.inputWithHelper}>
+            <TextInput
+              placeholder="Enter number of pages"
+              value={numberOfPages}
+              onChangeText={handlePagesChange}
+              style={[newChatModalStyles.input, newChatModalStyles.numberInput]}
+              keyboardType="number-pad"
+              maxLength={2}
+            />
+            <Text style={newChatModalStyles.helperText}>
+              Default: 12 (Max: 50)
+            </Text>
+          </View>
+        </ScrollView>
 
-        <Text style={newChatModalStyles.label}>Story Topic *</Text>
-        <View style={newChatModalStyles.pickerContainer}>
-          <Picker
-            selectedValue={topic}
-            onValueChange={(itemValue) => setTopic(itemValue)}
-            style={newChatModalStyles.picker}
-            itemStyle={{ fontSize: 17, color: "#333", height: 50 }}
+        <SafeAreaView style={newChatModalStyles.buttonRow}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={[newChatModalStyles.cancel, storyRoomsStyles.cancelButton]}
           >
-            {STORY_TOPICS.map((t) => (
-              <Picker.Item
-                key={t}
-                label={t}
-                value={t}
-                color={topic === t ? "#007AFF" : "#333"}
-              />
-            ))}
-          </Picker>
-        </View>
-
-        <Text style={newChatModalStyles.label}>Word Limit per Page *</Text>
-        <View style={newChatModalStyles.inputWithHelper}>
-          <TextInput
-            placeholder="Enter word limit"
-            value={wordLimit}
-            onChangeText={handleWordLimitChange}
-            style={[newChatModalStyles.input, newChatModalStyles.numberInput]}
-            keyboardType="number-pad"
-          />
-          <Text style={newChatModalStyles.helperText}>
-            Default: 100 (Max: 500)
-          </Text>
-        </View>
-
-        <Text style={newChatModalStyles.label}>Number of Pages *</Text>
-        <View style={newChatModalStyles.inputWithHelper}>
-          <TextInput
-            placeholder="Enter number of pages"
-            value={numberOfPages}
-            onChangeText={handlePagesChange}
-            style={[newChatModalStyles.input, newChatModalStyles.numberInput]}
-            keyboardType="number-pad"
-          />
-          <Text style={newChatModalStyles.helperText}>
-            Default: 12 (Max: 50)
-          </Text>
-        </View>
-      </ScrollView>
-
-      <SafeAreaView style={newChatModalStyles.buttonRow}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={[newChatModalStyles.cancel, storyRoomsStyles.cancelButton]}
-        >
-          <Text
-            style={[
-              newChatModalStyles.buttonText,
-              storyRoomsStyles.cancelButtonText,
-            ]}
+            <Text
+              style={[
+                newChatModalStyles.buttonText,
+                storyRoomsStyles.cancelButtonText,
+              ]}
+            >
+              Cancel
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCreate}
+            style={[newChatModalStyles.create, storyRoomsStyles.createButton]}
           >
-            Cancel
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleCreate}
-          style={[newChatModalStyles.create, storyRoomsStyles.createButton]}
-        >
-          <Text
-            style={[newChatModalStyles.buttonText, storyRoomsStyles.buttonText]}
-          >
-            Create Story
-          </Text>
-        </TouchableOpacity>
-      </SafeAreaView>
+            <Text
+              style={[
+                newChatModalStyles.buttonText,
+                storyRoomsStyles.buttonText,
+              ]}
+            >
+              Create Story
+            </Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

@@ -698,6 +698,7 @@ const ChatScreen = () => {
                           <Image
                             source={{ uri: item.imageUrl }}
                             style={chatStyles.messageImage}
+                            resizeMode="contain"
                           />
                         )}
                         {item.text && (
@@ -730,6 +731,7 @@ const ChatScreen = () => {
                       <Image
                         source={{ uri: item.imageUrl }}
                         style={chatStyles.messageImage}
+                        resizeMode="contain"
                       />
                     )}
                     {item.text && (
