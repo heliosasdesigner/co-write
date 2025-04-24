@@ -50,6 +50,9 @@ const LandingPage = () => {
               topic: chatData.topic,
               image: chatData.image,
               title: chatData.title,
+              finishedAt: chatData.finishedAt?.toDate
+                ? chatData.finishedAt.toDate()
+                : chatData.finishedAt,
               lastMessage: chatData.lastMessage,
               lastMessageTimestamp: chatData.lastMessageTimestamp?.toDate
                 ? chatData.lastMessageTimestamp.toDate()
@@ -71,9 +74,22 @@ const LandingPage = () => {
               shouldShow,
             });
             return shouldShow;
+          })
+          .sort((a, b) => {
+            if (!a.finishedAt || !b.finishedAt) return 0;
+            return (
+              (b.finishedAt instanceof Date
+                ? b.finishedAt
+                : new Date(b.finishedAt)
+              ).getTime() -
+              (a.finishedAt instanceof Date
+                ? a.finishedAt
+                : new Date(a.finishedAt)
+              ).getTime()
+            );
           });
 
-        console.log("Filtered chats:", data.length);
+        console.log("Filtered and sorted chats:", data.length);
         setChats(data);
       } catch (error: unknown) {
         console.error("Error fetching chats:", error);
