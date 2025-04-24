@@ -7,12 +7,13 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
+  Platform,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
-import { newChatModalStyles } from "../styles";
+import { newChatModalStyles, storyRoomsStyles } from "../styles";
 
 const STORY_MODES = [
   { id: "ai", label: "Co-Write with AI", value: "AI" },
@@ -124,7 +125,7 @@ const NewChatPage: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={newChatModalStyles.container}>
+    <SafeAreaView style={[newChatModalStyles.container, { flex: 1 }]}>
       <View style={newChatModalStyles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -136,7 +137,11 @@ const NewChatPage: React.FC = () => {
         <Text style={newChatModalStyles.headerTitle}>Create Story</Text>
       </View>
 
-      <ScrollView style={newChatModalStyles.content} bounces={false}>
+      <ScrollView
+        style={newChatModalStyles.content}
+        bounces={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         <Text style={newChatModalStyles.title}>New Co-Write Story</Text>
 
         <Text style={newChatModalStyles.label}>Writing Mode *</Text>
@@ -224,22 +229,33 @@ const NewChatPage: React.FC = () => {
             Default: 12 (Max: 50)
           </Text>
         </View>
-
-        <View style={newChatModalStyles.buttonRow}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={newChatModalStyles.cancel}
-          >
-            <Text>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleCreate}
-            style={newChatModalStyles.create}
-          >
-            <Text style={{ color: "white" }}>Create Story</Text>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
+
+      <SafeAreaView style={newChatModalStyles.buttonRow}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={[newChatModalStyles.cancel, storyRoomsStyles.cancelButton]}
+        >
+          <Text
+            style={[
+              newChatModalStyles.buttonText,
+              storyRoomsStyles.cancelButtonText,
+            ]}
+          >
+            Cancel
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleCreate}
+          style={[newChatModalStyles.create, storyRoomsStyles.createButton]}
+        >
+          <Text
+            style={[newChatModalStyles.buttonText, storyRoomsStyles.buttonText]}
+          >
+            Create Story
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
     </SafeAreaView>
   );
 };

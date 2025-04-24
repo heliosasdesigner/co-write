@@ -13,6 +13,19 @@ type RootStackParamList = {
   Profile: undefined;
   "Chat List": undefined;
   Chats: undefined;
+  StoryDetails: {
+    id: string;
+    userId: string;
+    topic: string;
+    title: string;
+    createdAt: any;
+    image?: string;
+    lastMessage: string;
+    lastMessageTimestamp: any;
+    isFinished: boolean;
+    wordLimit: number;
+    votes: number;
+  };
 };
 
 type NavBarProps = {
@@ -44,6 +57,14 @@ const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const handleNavigation = (route: keyof RootStackParamList) => {
+    if (route === "StoryDetails") {
+      // Don't navigate to StoryDetails from the nav bar
+      return;
+    }
+    navigation.navigate(route);
+  };
+
   return (
     <View style={navigationStyles.container}>
       {tabConfig.map(({ route, label, iconName }) => {
@@ -53,7 +74,7 @@ const NavBar: React.FC<NavBarProps> = ({ currentTab = "Home" }) => {
           <TouchableOpacity
             key={route}
             style={navigationStyles.tabButton}
-            onPress={() => navigation.navigate(route)}
+            onPress={() => handleNavigation(route)}
           >
             <MaterialIcons
               name={iconName}

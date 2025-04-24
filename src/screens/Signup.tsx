@@ -89,11 +89,8 @@ export default function Signup({ navigation }: Props) {
             style={{ marginTop: 20 }}
           />
         ) : (
-          <TouchableOpacity
-            style={loginButtonStyles.button}
-            onPress={onHandleSignup}
-          >
-            <Text style={loginButtonStyles.buttonText}>Sign Up</Text>
+          <TouchableOpacity style={authStyles.button} onPress={onHandleSignup}>
+            <Text style={authStyles.buttonText}>Sign Up</Text>
           </TouchableOpacity>
         )}
 

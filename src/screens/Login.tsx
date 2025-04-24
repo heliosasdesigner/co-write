@@ -88,11 +88,8 @@ export default function Login({ navigation }: Props) {
           value={password}
           onChangeText={(text) => setPassword(text)}
         />
-        <TouchableOpacity
-          style={loginButtonStyles.button}
-          onPress={onHandleLogin}
-        >
-          <Text style={loginButtonStyles.buttonText}>Log In</Text>
+        <TouchableOpacity style={authStyles.button} onPress={onHandleLogin}>
+          <Text style={authStyles.buttonText}>Log In</Text>
         </TouchableOpacity>
         <View style={authStyles.linkContainer}>
           <Text style={authStyles.linkText}>Don't have an account? </Text>

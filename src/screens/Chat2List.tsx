@@ -15,7 +15,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
-import { chatListStyles } from "../styles";
+import { chatListStyles, headerStyles, storyRoomsStyles } from "../styles";
 
 type RootStackParamList = {
   ChatScreen: { chatId: string };
@@ -45,6 +45,7 @@ type Chat = {
   aiAssistant?: boolean;
   wordLimit?: number;
   numberOfPages?: number;
+  isFinished?: boolean;
 };
 
 const EmptyState = () => (
@@ -84,6 +85,7 @@ const ChatListScreen = () => {
           aiAssistant: data.aiAssistant,
           wordLimit: data.wordLimit,
           numberOfPages: data.numberOfPages,
+          isFinished: data.isFinished || false,
         };
       });
       setChats(chatList);
@@ -116,6 +118,7 @@ const ChatListScreen = () => {
       numberOfPages: numberOfPages ? parseInt(numberOfPages) : null,
       lastMessage: "",
       lastMessageTimestamp: serverTimestamp(),
+      isFinished: false,
     });
 
     navigation.navigate("ChatScreen", { chatId });
@@ -123,14 +126,28 @@ const ChatListScreen = () => {
 
   const renderItem = ({ item }: { item: Chat }) => (
     <TouchableOpacity
-      style={chatListStyles.chatItem}
+      style={[chatListStyles.chatItem, storyRoomsStyles.roomItem]}
       onPress={() => navigation.navigate("ChatScreen", { chatId: item.id })}
     >
-      <Text style={chatListStyles.chatUser}>
-        {item.title || "Untitled Story"}
-      </Text>
-      {item.topic && <Text style={chatListStyles.topic}>{item.topic}</Text>}
-      <Text style={chatListStyles.lastMessage} numberOfLines={2}>
+      <View style={chatListStyles.chatHeader}>
+        <Text style={[chatListStyles.chatUser, storyRoomsStyles.roomTitle]}>
+          {item.title || "Untitled Story"}
+        </Text>
+        {item.isFinished && (
+          <View style={chatListStyles.completionTag}>
+            <Text style={chatListStyles.completionTagText}>Completed</Text>
+          </View>
+        )}
+      </View>
+      {item.topic && (
+        <Text style={[chatListStyles.topic, storyRoomsStyles.roomDescription]}>
+          {item.topic}
+        </Text>
+      )}
+      <Text
+        style={[chatListStyles.lastMessage, storyRoomsStyles.roomMetaText]}
+        numberOfLines={2}
+      >
         {item.lastMessage || "Start writing your story..."}
       </Text>
     </TouchableOpacity>
@@ -138,7 +155,12 @@ const ChatListScreen = () => {
 
   return (
     <PageLayout currentTab="Story Rooms">
-      <View style={chatListStyles.container}>
+      <View style={[headerStyles.header, storyRoomsStyles.header]}>
+        <Text style={[headerStyles.title, storyRoomsStyles.headerTitle]}>
+          Story Rooms
+        </Text>
+      </View>
+      <View style={[chatListStyles.container, storyRoomsStyles.container]}>
         <FlatList
           data={chats}
           keyExtractor={(item) => item.id}
@@ -151,7 +173,7 @@ const ChatListScreen = () => {
           onPress={() =>
             navigation.navigate("New Story", { onCreateChat: handleCreateChat })
           }
-          style={chatListStyles.newChatButton}
+          style={[chatListStyles.newChatButton, storyRoomsStyles.createButton]}
         >
           <Ionicons
             name="add"
@@ -159,7 +181,11 @@ const ChatListScreen = () => {
             color="#fff"
             style={{ marginRight: 4 }}
           />
-          <Text style={chatListStyles.buttonText}>New Story</Text>
+          <Text
+            style={[chatListStyles.buttonText, storyRoomsStyles.buttonText]}
+          >
+            New Story
+          </Text>
         </TouchableOpacity>
       </View>
     </PageLayout>

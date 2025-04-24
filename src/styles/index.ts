@@ -138,33 +138,42 @@ export const headerStyles = StyleSheet.create({
 
 export const storyCardStyles = StyleSheet.create({
   card: {
-    ...sharedStyles.card,
     flex: 1,
-    height: "100%",
-    justifyContent: "flex-start",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  container: {
+    flex: 1,
+    flexDirection: "column",
+  },
+  image: {
+    width: "100%",
+    height: "70%",
+    resizeMode: "cover",
+  },
+  content: {
+    padding: 0,
+    backgroundColor: "#fff",
+    position: "relative",
   },
   title: {
-    ...sharedStyles.title,
-    marginBottom: 12,
-    color: "#333",
-  },
-  description: {
     fontSize: 16,
-    color: "#666",
-    flex: 1,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
   },
-  footer: {
-    marginTop: "auto",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  footerText: {
+  topic: {
     fontSize: 14,
-    color: "#888",
+    color: "#666",
   },
 });
 
@@ -316,6 +325,7 @@ export const chatStyles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
+    width: "100%",
   },
   summaryTitle: {
     fontSize: 18,
@@ -330,7 +340,11 @@ export const chatStyles = StyleSheet.create({
   },
   imageContainer: {
     marginTop: 20,
-    alignItems: "center",
+    marginBottom: 20,
+    width: "100%",
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 16,
   },
   imageTitle: {
     fontSize: 18,
@@ -394,11 +408,29 @@ export const chatListStyles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  chatHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
   chatUser: {
     fontSize: 17,
     fontWeight: "600",
     color: "#1a1a1a",
-    marginBottom: 6,
+    flex: 1,
+  },
+  completionTag: {
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  completionTagText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
   },
   topic: {
     fontSize: 15,
@@ -477,6 +509,12 @@ export const newChatModalStyles = StyleSheet.create({
     ...sharedStyles.input,
     marginBottom: 4,
   },
+  inputWithHelper: {
+    marginBottom: 20,
+  },
+  numberInput: {
+    width: "100%",
+  },
   pickerContainer: {
     borderWidth: 1,
     borderColor: "rgba(0,0,0,0.0)",
@@ -501,7 +539,15 @@ export const newChatModalStyles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 24,
+    position: "absolute",
+    bottom: 24,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
   },
   cancel: {
     flex: 1,
@@ -517,6 +563,11 @@ export const newChatModalStyles = StyleSheet.create({
     ...sharedStyles.button,
     flex: 1,
     marginLeft: 8,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
 
@@ -542,50 +593,95 @@ export const appStyles = StyleSheet.create({
 
 // Auth Styles
 export const authStyles = StyleSheet.create({
-  container: sharedStyles.container,
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   form: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
+    alignItems: "stretch",
     paddingHorizontal: 24,
+    paddingTop: 40,
+    marginLeft: 24,
+    marginRight: 24,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    marginTop: 260,
     paddingBottom: 40,
   },
   title: {
     fontSize: 32,
-    fontWeight: "700",
-    color: "#1a1a1a",
+    fontWeight: "600",
+    color: "#000",
     marginBottom: 32,
-    textAlign: "center",
+    textAlign: "left",
   },
   input: {
-    ...sharedStyles.input,
-    marginBottom: 16,
+    height: 48,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+    marginBottom: 20,
   },
   button: {
-    ...sharedStyles.button,
-    marginTop: 8,
+    backgroundColor: "#007AFF",
+    height: 48,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 32,
+    marginBottom: 32,
   },
-  buttonText: sharedStyles.buttonText,
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
   errorText: {
     color: "#FF3B30",
     fontSize: 14,
     textAlign: "center",
     marginBottom: 16,
+    backgroundColor: "#FFE5E5",
+    padding: 12,
+    borderRadius: 8,
   },
   linkContainer: {
-    marginTop: 24,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 16,
   },
   linkText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#666",
   },
   linkButtonText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#007AFF",
-    fontWeight: "600",
+    fontWeight: "400",
     marginLeft: 4,
+  },
+  backImage: {
+    width: "100%",
+    height: 320,
+    position: "absolute",
+    top: 0,
+    resizeMode: "cover",
+  },
+  whiteSheet: {
+    width: "100%",
+    height: "75%",
+    position: "absolute",
+    bottom: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
   },
 });
 
@@ -593,7 +689,7 @@ export const authStyles = StyleSheet.create({
 export const storyRoomsStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#fff",
   },
   header: sharedStyles.header,
   headerTitle: {
@@ -646,7 +742,7 @@ export const storyRoomsStyles = StyleSheet.create({
     position: "absolute",
     right: 20,
     bottom: 20,
-    width: 56,
+    width: 156,
     height: 56,
     borderRadius: 28,
     backgroundColor: "#007AFF",
@@ -657,7 +753,29 @@ export const storyRoomsStyles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
+  cancelButton: {
+    position: "absolute",
+    left: 20,
+    bottom: 20,
+    width: 156,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#007AFF",
+    ...sharedStyles.shadow,
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   buttonText: sharedStyles.buttonText,
+  cancelButtonText: {
+    color: "#007AFF",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 });
 
 // Landing Page Styles
@@ -667,7 +785,7 @@ export const landingStyles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
   },
   grid: {
-    padding: 16,
+    padding: 0,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",

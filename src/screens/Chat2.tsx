@@ -24,6 +24,8 @@ import {
   doc,
   updateDoc,
   serverTimestamp,
+  getDocs,
+  where,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import React, { useEffect, useState, useRef, useMemo } from "react";
@@ -97,6 +99,59 @@ const ChatScreen = () => {
     streamedText,
     startStream,
   } = useOpenAIStream();
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [sectionImages, setSectionImages] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!imageUrl) return;
+
+    console.log("handleImageUpload hit!!!");
+    console.log("Image URL:", imageUrl);
+
+    setIsUploading(true);
+    uploadSectionImages(imageUrl, chatId)
+      .then(async (url) => {
+        console.log("Image was uploaded successfully: ", url);
+        if (url) {
+          try {
+            await updateDoc(doc(db, "chats", chatId), {
+              image: url,
+              isFinished: true,
+              finishedAt: serverTimestamp(),
+            });
+            console.log("Story marked as finished with image URL");
+            setUploadedImageUrl(url);
+            setStorySubmit(true);
+          } catch (error) {
+            console.error("Error updating story with image:", error);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error uploading image:", error);
+      })
+      .finally(() => {
+        setIsUploading(false);
+      });
+  }, [imageUrl]);
+
+  // Add navigation blocking during upload
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+      if (isUploading) {
+        // Prevent navigation during upload
+        e.preventDefault();
+        Alert.alert(
+          "Upload in Progress",
+          "Please wait for the image upload to complete before leaving.",
+          [{ text: "OK" }]
+        );
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, isUploading]);
 
   useEffect(() => {
     (async () => {
@@ -108,8 +163,35 @@ const ChatScreen = () => {
         if (typeof d.aiAssistant === "boolean") {
           setAiAssistant(d.aiAssistant);
         }
+        // Check if story is already completed
+        if (d.isFinished) {
+          setStorySubmit(true);
+          // Fetch the AI summary message
+          const messagesSnap = await getDocs(
+            query(
+              collection(db, "chats", chatId, "messages"),
+              where("senderId", "==", "AI-summary")
+            )
+          );
+          if (!messagesSnap.empty) {
+            const summaryMessage = messagesSnap.docs[0].data();
+            setStorySummary(summaryMessage.text || "");
+          }
+        }
       }
     })();
+  }, [chatId]);
+
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "chats", chatId), (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.isFinished) {
+          setStorySubmit(true);
+        }
+      }
+    });
+    return () => unsub();
   }, [chatId]);
 
   useEffect(() => {
@@ -125,48 +207,66 @@ const ChatScreen = () => {
   }, [chatId]);
 
   useEffect(() => {
-    if (!imageUrl) return;
-    if (storySubmit) return;
-
-    console.log("handleImageUpload hit!!!");
-    console.log(imageUrl);
-
-    uploadSectionImages(imageUrl, chatId)
-      .then(async (url) => {
-        console.log("Image was uploaded successfully: ", url);
-        // Update the story's finished status when both image and summary exist
-        if (url && storySummary) {
-          try {
-            await updateDoc(doc(db, "chats", chatId), {
-              isFinished: true,
-              finishedAt: serverTimestamp(),
-            });
-            console.log("Story marked as finished in database");
-          } catch (error) {
-            console.error("Error updating story finished status:", error);
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error uploading image:", error);
-      });
-  }, [imageUrl, storySummary]);
-
-  useEffect(() => {
     // Check if there are no messages or if AI summary is not found
     const hasAISummary = messages.some((msg) => msg.senderId === "AI-summary");
-    if (messages.length === 0 || !hasAISummary) {
-      setStorySummary("");
-      setStorySubmit(false);
-      // Reset finished status if summary is removed
-      updateDoc(doc(db, "chats", chatId), {
-        isFinished: false,
-        finishedAt: null,
-      }).catch((error) => {
-        console.error("Error resetting story finished status:", error);
-      });
-    }
+
+    // First check if the story is already finished in the database
+    const checkFinishedStatus = async () => {
+      const snap = await getDoc(doc(db, "chats", chatId));
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.isFinished) {
+          setStorySubmit(true);
+          return;
+        }
+      }
+
+      // Only reset if not finished and no AI summary
+      if (messages.length === 0 || !hasAISummary) {
+        setStorySummary("");
+        if (!hasAISummary) {
+          setStorySubmit(false);
+          // Reset finished status if summary is removed
+          updateDoc(doc(db, "chats", chatId), {
+            isFinished: false,
+            finishedAt: null,
+            image: null,
+          }).catch((error) => {
+            console.error("Error resetting story finished status:", error);
+          });
+        }
+      }
+    };
+
+    checkFinishedStatus();
   }, [messages]);
+
+  // Add effect to fetch sectionImages when story is finished
+  useEffect(() => {
+    const fetchSectionImages = async () => {
+      if (storySubmit) {
+        try {
+          const snap = await getDoc(doc(db, "chats", chatId));
+          if (snap.exists()) {
+            const d = snap.data();
+            if (
+              d.sectionImages &&
+              Array.isArray(d.sectionImages) &&
+              d.sectionImages.length > 0
+            ) {
+              setSectionImages(d.sectionImages);
+              // Set the last image as the uploaded image
+              setUploadedImageUrl(d.sectionImages[d.sectionImages.length - 1]);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching section images:", error);
+        }
+      }
+    };
+
+    fetchSectionImages();
+  }, [storySubmit, chatId]);
 
   const wordCount = input.trim().split(/\s+/).filter(Boolean).length;
   const overLimit = wordLimit != null && wordCount > wordLimit;
@@ -302,11 +402,19 @@ const ChatScreen = () => {
       // Mark story as submitted
       setStorySubmit(true);
 
+      // Store the summary in the database
       await addDoc(collection(db, "chats", chatId, "messages"), {
         text: aiText.trim(),
         senderId: "AI-summary",
         timestamp: serverTimestamp(),
       });
+
+      // Update the chat document to mark it as finished
+      await updateDoc(doc(db, "chats", chatId), {
+        isFinished: true,
+        finishedAt: serverTimestamp(),
+      });
+
       flatListRef.current?.scrollToEnd({ animated: true });
 
       // Generate image for the completed story
@@ -454,7 +562,17 @@ const ChatScreen = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <View style={chatStyles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (!isUploading) {
+              navigation.goBack();
+            } else {
+              Alert.alert(
+                "Upload in Progress",
+                "Please wait for the image upload to complete before leaving.",
+                [{ text: "OK" }]
+              );
+            }
+          }}
           style={chatStyles.backButton}
         >
           <Ionicons name="chevron-back" size={24} color="#007AFF" />
@@ -501,22 +619,6 @@ const ChatScreen = () => {
             <View style={chatStyles.completionContent}>
               <Text style={chatStyles.completionTitle}>Story Complete!</Text>
 
-              {imageUrl && (
-                <View style={chatStyles.imageContainer}>
-                  <Text style={chatStyles.imageTitle}>Story Illustration</Text>
-                  <Image
-                    source={{ uri: imageUrl }}
-                    style={chatStyles.completionImage}
-                    resizeMode="contain"
-                  />
-                </View>
-              )}
-
-              <View style={chatStyles.summaryContainer}>
-                <Text style={chatStyles.summaryTitle}>Story Summary</Text>
-                <Text style={chatStyles.summaryText}>{storySummary}</Text>
-              </View>
-
               {(imageGenerating || isLoading) && (
                 <View style={chatStyles.loadingContainer}>
                   <ActivityIndicator size="large" color="#007bff" />
@@ -533,6 +635,29 @@ const ChatScreen = () => {
                   </Text>
                 </View>
               )}
+
+              {isUploading && (
+                <View style={chatStyles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#007bff" />
+                  <Text style={chatStyles.loadingText}>Uploading image...</Text>
+                </View>
+              )}
+
+              {uploadedImageUrl && !isUploading && (
+                <View style={chatStyles.imageContainer}>
+                  <Text style={chatStyles.imageTitle}>Story Illustration</Text>
+                  <Image
+                    source={{ uri: uploadedImageUrl }}
+                    style={chatStyles.completionImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
+
+              <View style={chatStyles.summaryContainer}>
+                <Text style={chatStyles.summaryTitle}>Story Summary</Text>
+                <Text style={chatStyles.summaryText}>{storySummary}</Text>
+              </View>
             </View>
           </ScrollView>
         ) : (

@@ -3,15 +3,53 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import PageLayout from "../components/PageLayout";
 import { db } from "../../firebase/config";
 import { updateDoc, increment, doc } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
+import { RouteProp } from "@react-navigation/native";
 
-const StoryDetailsPage = ({ route }) => {
+interface StoryDetailsParams {
+  id: string;
+  userId: string;
+  topic: string;
+  title: string;
+  createdAt: Timestamp | Date;
+  image?: string;
+  lastMessage: string;
+  lastMessageTimestamp: Timestamp | Date;
+  isFinished: boolean;
+  wordLimit: number;
+  votes: number;
+}
+
+type RootStackParamList = {
+  Home: undefined;
+  Search: undefined;
+  "New Story": undefined;
+  "Story Rooms": undefined;
+  Profile: undefined;
+  "Chat List": undefined;
+  Chats: undefined;
+  StoryDetails: StoryDetailsParams;
+};
+
+type StoryDetailsRouteProp = RouteProp<RootStackParamList, "StoryDetails">;
+
+interface StoryDetailsPageProps {
+  route: StoryDetailsRouteProp;
+}
+
+const StoryDetailsPage: React.FC<StoryDetailsPageProps> = ({ route }) => {
   const {
     id,
-    topic,
-    createdAt,
-    video,
-    votes: initialVotes = 0,
     userId,
+    topic,
+    title,
+    createdAt,
+    image,
+    lastMessage,
+    lastMessageTimestamp,
+    isFinished,
+    wordLimit,
+    votes: initialVotes = 0,
   } = route.params;
 
   const [votes, setVotes] = useState(initialVotes);
@@ -22,36 +60,65 @@ const StoryDetailsPage = ({ route }) => {
     }
   }, [id]);
 
-  const handleVote = async (amount) => {
+  const handleVote = async (amount: number) => {
     try {
       if (!id) throw new Error("Story ID is missing.");
 
-      const storyRef = doc(db, "stories", id);
+      const chatRef = doc(db, "chats", id);
 
-      await updateDoc(storyRef, {
+      await updateDoc(chatRef, {
         votes: increment(amount),
       });
 
       setVotes((prev) => prev + amount);
-    } catch (error) {
-      console.error("Error updating votes:", error.message || error);
+    } catch (error: unknown) {
+      console.error(
+        "Error updating votes:",
+        error instanceof Error ? error.message : String(error)
+      );
     }
   };
 
-  return (
-    <PageLayout currentTab={null} scrollable>
-      <View style={styles.container}>
-        <Text style={styles.title}>{topic}</Text>
-        <Text style={styles.date}>{new Date(createdAt).toLocaleString()}</Text>
+  // Format timestamps
+  const formatDate = (timestamp: Timestamp | Date) => {
+    if (timestamp instanceof Timestamp) {
+      return timestamp.toDate().toLocaleString();
+    }
+    return new Date(timestamp).toLocaleString();
+  };
 
-        {video && (
+  return (
+    <PageLayout currentTab="Home" scrollable>
+      <View style={styles.container}>
+        <Text style={styles.title}>{title || topic}</Text>
+        <Text style={styles.date}>Created: {formatDate(createdAt)}</Text>
+        <Text style={styles.date}>
+          Last updated: {formatDate(lastMessageTimestamp)}
+        </Text>
+
+        <View style={styles.statusContainer}>
+          <Text
+            style={[
+              styles.status,
+              isFinished ? styles.completed : styles.inProgress,
+            ]}
+          >
+            {isFinished ? "Completed" : "In Progress"}
+          </Text>
+          <Text style={styles.wordLimit}>Word Limit: {wordLimit}</Text>
+        </View>
+
+        <Text style={styles.lastMessage}>{lastMessage}</Text>
+
+        {image && (
           <Image
             style={styles.image}
             source={{
-              uri: "https://www.seekscholar.com/sites/default/files/styles/node_image/public/1_b1T9PtMK3bxboKvnSctNmg.jpeg?itok=EwzrcGcU",
+              uri: image,
             }}
           />
         )}
+
         <View style={styles.voteRow}>
           <TouchableOpacity
             onPress={() => handleVote(1)}
@@ -73,10 +140,61 @@ const StoryDetailsPage = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  title: { fontSize: 24, fontWeight: "bold" },
-  date: { fontSize: 14, color: "#666", marginVertical: 8 },
-  image: { width: "100%", height: 200, borderRadius: 8 },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  date: {
+    fontSize: 14,
+    color: "#666",
+    marginVertical: 4,
+  },
+  statusContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+  },
+  status: {
+    fontSize: 16,
+    fontWeight: "600",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  completed: {
+    backgroundColor: "#E8F5E9",
+    color: "#2E7D32",
+  },
+  inProgress: {
+    backgroundColor: "#FFF3E0",
+    color: "#E65100",
+  },
+  wordLimit: {
+    fontSize: 14,
+    color: "#666",
+  },
+  lastMessage: {
+    fontSize: 16,
+    color: "#333",
+    marginVertical: 12,
+    lineHeight: 24,
+  },
+  image: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginVertical: 12,
+  },
   voteRow: {
     flexDirection: "row",
     justifyContent: "center",
