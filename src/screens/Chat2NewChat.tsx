@@ -56,6 +56,8 @@ const NewChatPage: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<NewStoryRouteProp>();
 
+  console.log("Route params:", route.params);
+
   // Set default values
   const [mode, setMode] = useState(STORY_MODES[0].value);
   const [otherUserId, setOtherUserId] = useState("");
@@ -65,34 +67,57 @@ const NewChatPage: React.FC = () => {
   const [title, setTitle] = useState("");
 
   const handleCreate = () => {
+    console.log("Creating chat with values:", {
+      mode,
+      otherUserId,
+      title,
+      topic,
+      wordLimit,
+      numberOfPages,
+    });
+
     const limit = parseInt(wordLimit);
     const pages = parseInt(numberOfPages);
 
     // Validation
     if (!title || !topic) {
+      console.log("Validation failed: Missing title or topic");
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
 
     if (isNaN(limit) || limit < 1 || limit > 500) {
+      console.log("Validation failed: Invalid word limit", limit);
       Alert.alert("Error", "Word limit must be between 1 and 500 words");
       return;
     }
 
     if (isNaN(pages) || pages < 1 || pages > 50) {
+      console.log("Validation failed: Invalid number of pages", pages);
       Alert.alert("Error", "Number of pages must be between 1 and 50");
       return;
     }
 
     if (mode === "user" && !otherUserId.trim()) {
+      console.log("Validation failed: Missing other user ID");
       Alert.alert("Error", "Please enter the other user's ID");
       return;
     }
 
     if (!route.params?.onCreateChat) {
+      console.log("Error: onCreateChat function is missing from route params");
       Alert.alert("Error", "Something went wrong. Please try again.");
       return;
     }
+
+    console.log("Calling onCreateChat with:", {
+      userId: mode === "AI" ? "AI" : otherUserId.trim(),
+      isAI: mode === "AI",
+      title: title.trim(),
+      topic: topic.trim(),
+      limit,
+      pages: numberOfPages,
+    });
 
     route.params.onCreateChat(
       mode === "AI" ? "AI" : otherUserId.trim(),
@@ -114,12 +139,14 @@ const NewChatPage: React.FC = () => {
   };
 
   const handleWordLimitChange = (text: string) => {
+    console.log("Word limit changed:", text);
     // Only allow numbers
     const numericValue = text.replace(/[^0-9]/g, "");
     setWordLimit(numericValue);
   };
 
   const handlePagesChange = (text: string) => {
+    console.log("Number of pages changed:", text);
     // Only allow numbers
     const numericValue = text.replace(/[^0-9]/g, "");
     setNumberOfPages(numericValue);

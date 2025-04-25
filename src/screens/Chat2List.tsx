@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   collection,
@@ -12,13 +12,21 @@ import {
   setDoc,
   doc,
   serverTimestamp,
+  addDoc,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/config";
 import PageLayout from "../components/PageLayout";
 import { chatListStyles, headerStyles, storyRoomsStyles } from "../styles";
 
 type RootStackParamList = {
-  ChatScreen: { chatId: string };
+  ChatScreen: {
+    chatId: string;
+    topic?: string;
+    title?: string;
+    aiAssistant?: boolean;
+    wordLimit?: string;
+    numberOfPages?: string;
+  };
   ChatList: undefined;
   "New Story": {
     onCreateChat: (
@@ -102,26 +110,40 @@ const ChatListScreen = () => {
     wordLimit: number,
     numberOfPages?: string
   ) => {
-    if (!user) return;
+    try {
+      if (!auth.currentUser?.email) {
+        Alert.alert("Error", "You must be logged in to create a story");
+        return;
+      }
 
-    const participants = [user?.uid, otherUserId].sort();
-    const chatId = `${participants.join("_")}_${Date.now()}`;
+      const storyData = {
+        topic: topic.trim(),
+        title: title.trim(),
+        userId: auth.currentUser.email,
+        aiAssistant,
+        wordLimit,
+        numberOfPages: numberOfPages || "12",
+        isFinished: false,
+        createdAt: new Date(),
+        lastMessage: "Story started",
+        lastMessageTimestamp: new Date(),
+        votes: 0,
+      };
 
-    const chatRef = doc(db, "chats", chatId);
+      const docRef = await addDoc(collection(db, "chats"), storyData);
 
-    await setDoc(chatRef, {
-      participants,
-      aiAssistant,
-      title,
-      topic,
-      wordLimit,
-      numberOfPages: numberOfPages ? parseInt(numberOfPages) : null,
-      lastMessage: "",
-      lastMessageTimestamp: serverTimestamp(),
-      isFinished: false,
-    });
-
-    navigation.navigate("ChatScreen", { chatId });
+      navigation.navigate("ChatScreen", {
+        chatId: docRef.id,
+        topic,
+        title,
+        aiAssistant,
+        wordLimit: wordLimit.toString(),
+        numberOfPages,
+      });
+    } catch (error) {
+      console.error("Error creating chat:", error);
+      Alert.alert("Error", "Failed to create story. Please try again.");
+    }
   };
 
   const renderItem = ({ item }: { item: Chat }) => (
