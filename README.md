@@ -146,7 +146,12 @@ yarn android
 
 ## 📱 Screenshots
 
-[Add screenshots of your app here]
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+  <img src="assets/screenshots/landing.png" alt="Landing Page" height="400px" style="margin: 10px;">
+  <img src="assets/screenshots/storyrooms.png" alt="Story Rooms" height="400px" style="margin: 10px;">
+  <img src="assets/screenshots/cowritewithAI.png" alt="Co-write with AI" height="400px" style="margin: 10px;">
+  <img src="assets/screenshots/completionPage.png" alt="Completion Page" height="400px" style="margin: 10px;">
+</div>
 
 ## 🤝 Contributing
 
